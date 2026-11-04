@@ -46,7 +46,7 @@ function fmtCost(n) {
 function usageNoteHTML(usage, title = '本次出题消耗') {
   if (!usage) return '';
   const cost = usage.priced
-    ? `，约 <b>${fmtCost(usage.cost)}</b>`
+    ? `，约 <b>${fmtCost(usage.cost)}</b>${usage.period === 'offPeak' ? '（空闲时段价）' : usage.period === 'peak' ? '（高峰时段价）' : usage.period === 'mixed' ? '（跨时段）' : ''}`
     : '（该模型未内置价格，仅统计 tokens）';
   return `<div class="usage-note"><span class="usage-tag">AI 用量</span><span>${title} <b>${fmtInt(usage.totalTokens)}</b> tokens（输入 ${fmtInt(
     usage.promptTokens
@@ -165,28 +165,26 @@ function setupHTML() {
   const sem = currentSemester();
   if (!subject || !sem) return `<section class="page"><div class="empty"><h3>正在加载课程数据…</h3></div></section>`;
   const selected = new Set(state.selectedKps);
-  const totalKps = sem.units.reduce((n, u) => n + u.kps.length, 0);
+  const selectedUnits = sem.units.filter((u) => u.kps.every((k) => selected.has(k.id)));
   const needsKey = state.subjectId !== 'math' && !state.config?.configured;
-  const unitsHTML = sem.units
-    .map(
-      (unit) => `<div class="unit">
-        <div class="unit-name">${esc(unit.name)}<em>${unit.kps.length} 个知识点</em></div>
-        <div class="chips">
-          ${unit.kps
-            .map(
-              (kp) =>
-                `<button class="chip ${selected.has(kp.id) ? 'on' : ''}" data-action="kp" data-id="${kp.id}">${ICONS.check}${esc(kp.name)}</button>`
-            )
-            .join('')}
-        </div>
-      </div>`
-    )
-    .join('');
+  const unitsHTML = `<div class="chapter-list">${sem.units
+    .map((unit) => {
+      const on = unit.kps.every((k) => selected.has(k.id));
+      return `<button class="chapter ${on ? 'on' : ''}" data-action="unit" data-id="${unit.id}">
+        <span class="chapter-check">${ICONS.check}</span>
+        <span class="chapter-body">
+          <strong>${esc(unit.name)}</strong>
+          <span>${unit.kps.map((k) => esc(k.name)).join(' · ')}</span>
+        </span>
+        <span class="chapter-count">${unit.kps.length} 个知识点</span>
+      </button>`;
+    })
+    .join('')}</div>`;
 
   return `<section class="page">
     <div class="page-head">
       <h1>组一套练习</h1>
-      <p>选择学科与知识点，AI 出题、自动批改，错题自动进入错题本；每次出题会显示消耗的 tokens 与费用。</p>
+      <p>选择学科与章节，AI 出题、自动批改，错题自动进入错题本；每次出题会显示消耗的 tokens 与费用。</p>
     </div>
 
     <div class="card">
@@ -200,7 +198,7 @@ function setupHTML() {
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>学期</h2><span class="hint">共 ${totalKps} 个知识点</span></div>
+      <div class="card-head"><h2>学期</h2><span class="hint">共 ${sem.units.length} 个章节</span></div>
       <div class="segmented">
         ${subject.semesters
           .map((s) => `<button class="${s.id === sem.id ? 'on' : ''}" data-action="semester" data-id="${s.id}">${esc(s.name)}</button>`)
@@ -210,8 +208,8 @@ function setupHTML() {
 
     <div class="card">
       <div class="card-head">
-        <h2>知识点</h2>
-        <span class="hint">已选 ${state.selectedKps.length} 个</span>
+        <h2>章节</h2>
+        <span class="hint">已选 ${selectedUnits.length} 章</span>
         <span class="spacer"></span>
         <button class="link" data-action="select-all">全选本学期</button>
         <button class="link" data-action="clear-kps">清空</button>
@@ -239,7 +237,7 @@ function setupHTML() {
       <div class="option-row">
         <span class="option-label"></span>
         <span class="hint" style="font-size:12.5px;color:var(--ink-3)">
-          ${state.mode === 'reinforce' ? '会围绕正确率最低的知识点生成变式题' : '不选知识点时，系统会自动挑选需要加强的内容'}
+          ${state.mode === 'reinforce' ? '会围绕正确率最低的内容生成变式题' : '不选章节时，系统会自动挑选需要加强的内容'}
         </span>
       </div>
     </div>
@@ -582,7 +580,7 @@ function settingsHTML() {
       </div>
       <div class="field">
         <label for="cfg-model">模型名称</label>
-        <input id="cfg-model" class="input" value="${esc(draft.model)}" placeholder="deepseek-v4-flash" />
+        <input id="cfg-model" class="input" value="${esc(draft.model)}" placeholder="deepseek-flash" />
       </div>
       <div class="field">
         <label for="cfg-apikey">API Key</label>
@@ -614,20 +612,21 @@ function settingsHTML() {
       </div>
       ${usagePanelHTML()}
       <p class="price-note">
-        DeepSeek 官方价格（元/百万 tokens）：deepseek-v4-flash 输入（缓存未命中）1 元、缓存命中 0.02 元、输出 2 元；
-        deepseek-v4-pro 输入 3 元、缓存命中 0.025 元、输出 6 元。其他模型只统计 tokens，不折算金额；实际扣费以服务商账单为准。
+        DeepSeek 采用峰谷定价：北京时间周一至周五 9:00–12:00、14:00–18:00 为高峰时段，其余时段（含周末、法定节假日）为空闲时段，空闲价为高峰价的一半。
+        deepseek-flash 高峰输入 2 元、缓存命中 0.04 元、输出 8 元，空闲输入 1 元、缓存命中 0.02 元、输出 4 元；
+        deepseek-v4-pro 高峰 9 / 0.30 / 27 元，空闲 4.5 / 0.15 / 13.5 元。其他模型只统计 tokens，不折算金额；实际扣费以服务商账单为准。
       </p>
     </div>
 
     <div class="card" style="margin-top:14px">
       <div class="card-head"><h2>关于教材</h2></div>
       <p style="font-size:13px;color:var(--ink-2);line-height:1.7">
-        知识点按深圳小学常用教材整理：${subjects()
+        课程内容按深圳小学常用教材整理：${subjects()
           .map((s) => `${s.name}（${s.textbook.replace(/（.*?）/g, '')}）`)
           .join('、')}，共 ${subjects().reduce(
-          (n, s) => n + s.semesters.reduce((m, sem) => m + sem.units.reduce((k, u) => k + u.kps.length, 0), 0),
+          (n, s) => n + s.semesters.reduce((m, sem) => m + sem.units.length, 0),
           0
-        )} 个知识点。
+        )} 个章节。
       </p>
     </div>
   </section>`;
@@ -662,7 +661,7 @@ async function loadUsage() {
 
 async function startPractice(kpIds, mode) {
   if (!kpIds.length && state.mode !== 'reinforce') {
-    showToast('请至少选择一个知识点', 'error');
+    showToast('请至少选择一个章节', 'error');
     return;
   }
   state.mode = mode || state.mode;
@@ -784,10 +783,15 @@ app.addEventListener('click', async (e) => {
     return;
   }
 
-  if (action === 'kp') {
-    const id = el.dataset.id;
+  if (action === 'unit') {
+    const unit = currentSemester()?.units.find((u) => u.id === el.dataset.id);
+    if (!unit) return;
     const set = new Set(state.selectedKps);
-    set.has(id) ? set.delete(id) : set.add(id);
+    const allOn = unit.kps.every((k) => set.has(k.id));
+    for (const kp of unit.kps) {
+      if (allOn) set.delete(kp.id);
+      else set.add(kp.id);
+    }
     state.selectedKps = [...set];
     renderApp();
     return;

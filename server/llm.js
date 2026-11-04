@@ -8,7 +8,7 @@ const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const DEFAULTS = {
   provider: 'deepseek',
   baseUrl: 'https://api.deepseek.com',
-  model: 'deepseek-v4-flash',
+  model: 'deepseek-flash',
   apiKey: ''
 };
 
@@ -74,6 +74,7 @@ async function chat(messages, { temperature = 0.7, maxTokens = 4096, timeout = 1
   const cfg = readConfig();
   if (!cfg.apiKey) throw new Error('尚未配置大模型 API Key');
   const url = `${cfg.baseUrl}/chat/completions`;
+  const requestedAt = Date.now();
 
   let res;
   try {
@@ -115,7 +116,7 @@ async function chat(messages, { temperature = 0.7, maxTokens = 4096, timeout = 1
   }
   const content = data?.choices?.[0]?.message?.content;
   if (typeof content !== 'string' || !content.trim()) throw new Error('模型没有返回有效内容');
-  const usage = { model: cfg.model, ...calcCost(cfg.model, data?.usage) };
+  const usage = { model: cfg.model, ...calcCost(cfg.model, data?.usage, requestedAt) };
   return { content, usage };
 }
 
@@ -317,6 +318,8 @@ function mergeUsage(usages) {
   }
   merged.totalTokens = merged.promptTokens + merged.completionTokens;
   merged.cost = Math.round(merged.cost * 1e6) / 1e6;
+  const periods = new Set(usages.filter(Boolean).map((usage) => usage.period).filter(Boolean));
+  merged.period = periods.size === 1 ? [...periods][0] : 'mixed';
   return merged;
 }
 
