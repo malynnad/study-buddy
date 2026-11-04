@@ -1,4 +1,6 @@
 // 本地判分：不依赖大模型，保证判分稳定、即时
+import { judgeDraw } from './geometry.js';
+
 const FULL_WIDTH = { '０': '0', '１': '1', '２': '2', '３': '3', '４': '4', '５': '5', '６': '6', '７': '7', '８': '8', '９': '9', '．': '.', '／': '/', '（': '(', '）': ')', '＋': '+', '－': '-', '＝': '=', '％': '%', '　': ' ' };
 
 export function normalize(raw) {
@@ -71,6 +73,8 @@ function optionLetter(text) {
 export function judge(question, userAnswer) {
   const raw = userAnswer == null ? '' : String(userAnswer).trim();
   if (!raw) return { correct: false, note: '未作答' };
+
+  if (question.type === 'draw') return judgeDraw(question, raw);
 
   if (question.type === 'choice') {
     const answerLetter = optionLetter(question.answer) || String(question.answer || '').trim().toUpperCase().slice(0, 1);

@@ -1,3 +1,5 @@
+import { figureSVG, parseFigurePoints } from './draw.js';
+
 const app = document.getElementById('app');
 
 const state = {
@@ -258,7 +260,10 @@ function examHTML() {
   const letters = ['A', 'B', 'C', 'D'];
 
   const answerArea =
-    q.type === 'choice'
+    q.type === 'draw' && q.figure
+      ? `${figureSVG(q.figure, parseFigurePoints(state.answers[q.id] || []))}
+        <div class="answer-tip">在方格纸上依次点击顶点，画成封闭图形；点错了可以撤销。</div>`
+      : q.type === 'choice'
       ? `<div class="choices">${(q.options || [])
           .map((opt, i) => {
             const letter = letters[i];
@@ -330,15 +335,30 @@ function resultHTML() {
           : `<div class="ri-solution">${esc(item.solution)}</div>`
         : '';
 
+      const drawFigure =
+        item.type === 'draw' && item.figure
+          ? figureSVG(item.figure, parseFigurePoints(item.userAnswer), {
+              readonly: true,
+              answerPoints: item.correct ? [] : parseFigurePoints(item.answer)
+            })
+          : '';
+      const userText =
+        item.type === 'draw'
+          ? parseFigurePoints(item.userAnswer).length
+            ? `已画 ${parseFigurePoints(item.userAnswer).length} 个顶点`
+            : '未作答'
+          : item.userAnswer || '未作答';
+
       return `<div class="result-item ${item.correct ? '' : 'bad'}">
         <div class="ri-head">
           <div class="ri-index">${item.seq}</div>
           <div class="ri-main">
             <div class="ri-stem">${esc(item.stem)}</div>
             ${opts}
+            ${drawFigure}
             <div class="ri-answer">
-              <span>你的答案：<b>${esc(item.userAnswer || '未作答')}</b></span>
-              ${item.correct ? '' : `<span>正确答案：<b>${esc(item.answer)}</b></span>`}
+              <span>你的答案：<b>${esc(userText)}</b></span>
+              ${item.correct ? '' : `<span>正确答案：<b>${esc(item.type === 'draw' ? '见绿色虚线图形' : item.answer)}</b></span>`}
               ${item.note ? `<span class="pill amber">${esc(item.note)}</span>` : ''}
             </div>
           </div>
@@ -394,13 +414,29 @@ function wrongbookHTML() {
               ${w.status === 'mastered' ? '<span class="pill green">已掌握</span>' : `<span class="pill red">错了 ${w.wrongCount} 次</span>`}
             </div>
             <div class="wrong-stem">${esc(w.stem)}</div>
+            ${
+              w.type === 'draw' && w.figure
+                ? figureSVG(w.figure, parseFigurePoints(w.lastAnswer), {
+                    readonly: true,
+                    answerPoints: parseFigurePoints(w.answer)
+                  })
+                : ''
+            }
             <div class="wrong-meta">
-              <span>上次作答：<b>${esc(w.lastAnswer || '未作答')}</b></span>
+              <span>上次作答：<b>${esc(
+                w.type === 'draw'
+                  ? parseFigurePoints(w.lastAnswer).length
+                    ? `已画 ${parseFigurePoints(w.lastAnswer).length} 个顶点`
+                    : '未作答'
+                  : w.lastAnswer || '未作答'
+              )}</b></span>
               ${w.errorProne ? `<span>易错点：<b>${esc(w.errorProne)}</b></span>` : ''}
             </div>
             <details class="solution">
               <summary>查看正确答案与解析</summary>
-              <div class="ri-solution">正确答案：${esc(w.answer)}\n${esc(w.solution || '暂无解析')}</div>
+              <div class="ri-solution">正确答案：${esc(
+                w.type === 'draw' ? '见方格纸中的绿色虚线图形' : w.answer
+              )}\n${esc(w.solution || '暂无解析')}</div>
             </details>
             <div class="wrong-actions">
               <button class="btn sm" data-action="toggle-mastered" data-id="${w.questionId}" data-status="${w.status}">
@@ -690,7 +726,13 @@ async function startPractice(kpIds, mode) {
 
 async function submitExam() {
   if (!state.session) return;
-  const answers = state.session.questions.map((q) => ({ questionId: q.id, answer: state.answers[q.id] ?? '' }));
+  const answers = state.session.questions.map((q) => {
+    const value = state.answers[q.id];
+    return {
+      questionId: q.id,
+      answer: Array.isArray(value) ? JSON.stringify(value) : (value ?? '')
+    };
+  });
   showLoading('正在批改…');
   try {
     state.result = await api('/api/grade', { method: 'POST', body: { sessionId: state.session.sessionId, answers } });
@@ -835,6 +877,36 @@ app.addEventListener('click', async (e) => {
     return;
   }
 
+  if (action === 'grid-point') {
+    const q = state.session.questions[state.index];
+    if (!q || q.type !== 'draw') return;
+    const points = parseFigurePoints(state.answers[q.id] || []);
+    const x = Number(el.dataset.x);
+    const y = Number(el.dataset.y);
+    const same = points.findIndex(([px, py]) => px === x && py === y);
+    if (same === -1) points.push([x, y]);
+    else points.splice(same, 1);
+    state.answers[q.id] = points;
+    renderApp();
+    return;
+  }
+
+  if (action === 'figure-undo') {
+    const q = state.session.questions[state.index];
+    const points = parseFigurePoints(state.answers[q.id] || []);
+    points.pop();
+    state.answers[q.id] = points;
+    renderApp();
+    return;
+  }
+
+  if (action === 'figure-clear') {
+    const q = state.session.questions[state.index];
+    state.answers[q.id] = [];
+    renderApp();
+    return;
+  }
+
   if (action === 'prev') {
     if (state.index > 0) {
       state.index--;
@@ -845,7 +917,13 @@ app.addEventListener('click', async (e) => {
 
   if (action === 'next') {
     const q = state.session.questions[state.index];
-    if (q.type !== 'choice' && !state.answers[q.id]?.trim()) {
+    if (q.type === 'draw') {
+      const points = parseFigurePoints(state.answers[q.id] || []);
+      if (points.length < 3) {
+        showToast('请先在方格纸上画出封闭图形（至少 3 个顶点）', 'error');
+        return;
+      }
+    } else if (q.type !== 'choice' && !String(state.answers[q.id] || '').trim()) {
       state.answers[q.id] = '';
     }
     if (state.index < state.session.questions.length - 1) {

@@ -83,6 +83,7 @@ function ensureColumn(table, column, definition) {
 }
 ensureColumn('sessions', 'subject', "subject TEXT NOT NULL DEFAULT 'math'");
 ensureColumn('questions', 'subject', "subject TEXT NOT NULL DEFAULT 'math'");
+ensureColumn('questions', 'figure', 'figure TEXT');
 
 export function now() {
   return Date.now();
@@ -99,8 +100,8 @@ export function saveQuestion(q, sessionId, seq, subject = 'math') {
   const info = db
     .prepare(
       `INSERT INTO questions
-       (session_id, seq, subject, type, stem, options, answer, solution, kp_id, kp_name, difficulty, error_prone, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       (session_id, seq, subject, type, stem, options, answer, solution, kp_id, kp_name, difficulty, error_prone, figure, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       sessionId,
@@ -115,6 +116,7 @@ export function saveQuestion(q, sessionId, seq, subject = 'math') {
       q.kpName,
       q.difficulty || 2,
       q.errorProne || '',
+      q.figure ? JSON.stringify(q.figure) : null,
       now()
     );
   return Number(info.lastInsertRowid);
@@ -124,7 +126,7 @@ export function listSessionQuestions(sessionId) {
   return db
     .prepare('SELECT * FROM questions WHERE session_id = ? ORDER BY seq ASC')
     .all(sessionId)
-    .map((row) => ({ ...row, options: row.options ? JSON.parse(row.options) : null }));
+    .map((row) => ({ ...row, options: row.options ? JSON.parse(row.options) : null, figure: row.figure ? JSON.parse(row.figure) : null }));
 }
 
 export function getSession(sessionId) {
@@ -173,7 +175,7 @@ export function setWrongStatus(questionId, status) {
 
 export function listWrongItems(status, subject) {
   const base = `
-    SELECT w.*, q.subject, q.type, q.stem, q.options, q.answer, q.solution, q.kp_id, q.kp_name, q.difficulty, q.error_prone, q.created_at AS asked_at
+    SELECT w.*, q.subject, q.type, q.stem, q.options, q.answer, q.solution, q.figure, q.kp_id, q.kp_name, q.difficulty, q.error_prone, q.created_at AS asked_at
     FROM wrong_items w JOIN questions q ON q.id = w.question_id`;
   const where = [];
   const args = [];
@@ -187,7 +189,7 @@ export function listWrongItems(status, subject) {
   return db
     .prepare(sql)
     .all(...args)
-    .map((row) => ({ ...row, options: row.options ? JSON.parse(row.options) : null }));
+    .map((row) => ({ ...row, options: row.options ? JSON.parse(row.options) : null, figure: row.figure ? JSON.parse(row.figure) : null }));
 }
 
 export function wrongStatsByKp(subject) {
@@ -230,7 +232,7 @@ export function getQuestionsByIds(ids) {
   const rows = db
     .prepare(`SELECT * FROM questions WHERE id IN (${ids.map(() => '?').join(',')})`)
     .all(...ids);
-  return rows.map((row) => ({ ...row, options: row.options ? JSON.parse(row.options) : null }));
+  return rows.map((row) => ({ ...row, options: row.options ? JSON.parse(row.options) : null, figure: row.figure ? JSON.parse(row.figure) : null }));
 }
 
 export function overview(subject) {

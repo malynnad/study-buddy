@@ -153,7 +153,7 @@ async function handleGenerate(body) {
   const sessionId = store.createSession(mode, kps.map((k) => k.id), subject.id);
   const saved = questions.map((q, i) => {
     const id = store.saveQuestion(q, sessionId, i + 1, subject.id);
-    return { id, seq: i + 1, type: q.type, stem: q.stem, options: q.options, difficulty: q.difficulty, kpId: q.kpId, kpName: q.kpName };
+    return { id, seq: i + 1, type: q.type, stem: q.stem, options: q.options, figure: q.figure || null, difficulty: q.difficulty, kpId: q.kpId, kpName: q.kpName };
   });
   if (usage) store.recordUsage({ sessionId, subject: subject.id, kind: 'generate', ...usage });
 
@@ -191,6 +191,7 @@ async function handleGrade(body) {
       type: q.type,
       stem: q.stem,
       options: q.options,
+      figure: q.figure || null,
       kpId: q.kp_id,
       kpName: q.kp_name,
       difficulty: q.difficulty,
@@ -307,6 +308,7 @@ async function route(req, res) {
           stem: w.stem,
           options: w.options,
           answer: w.answer,
+          figure: w.figure || null,
           solution: w.solution,
           kpId: w.kp_id,
           kpName: w.kp_name,

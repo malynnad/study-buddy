@@ -26,6 +26,7 @@ function mk(kp, q) {
     options: q.options || null,
     answer: String(q.answer),
     solution: q.solution,
+    figure: q.figure || null,
     kpId: kp.id,
     kpName: kp.name,
     difficulty: q.difficulty || 2,
@@ -816,14 +817,82 @@ Object.assign(GENERATORS, {
   '5a-u2': triangleQuestion,
   '5a-u3': decimalMul,
   '5a-u4': letterAlgebra,
-  '5a-u5': savedAreaGenerator,
-  '5a-u6': savedSymmetryGenerator,
+  '5a-u5': (kp) => (Math.random() < 0.5 ? drawArea(kp) : savedAreaGenerator(kp)),
+  '5a-u6': (kp) => (Math.random() < 0.5 ? drawTransform(kp) : savedSymmetryGenerator(kp)),
   '5a-u7': savedFactorsGenerator,
   '5a-u8': probabilityQuestion,
   '5a-u9': designQuestion,
   '5a-u10': chickenRabbit,
   '5a-u11': areaEstimate
 });
+
+// —— 作图题：只出格点可判分的三种结构 ——
+const GRID_W = 12;
+const GRID_H = 8;
+
+function drawTransform(kp) {
+  if (Math.random() < 0.5) {
+    const axisAt = rnd(4, 6);
+    const x1 = rnd(1, axisAt - 3);
+    const x2 = rnd(x1 + 1, axisAt - 1);
+    const y1 = rnd(1, 3);
+    const y2 = rnd(y1 + 1, 6);
+    const base = [[x1, y1], [x2, y1], [x2, y2]];
+    const answer = base.map(([x, y]) => [2 * axisAt - x, y]);
+    return mk(kp, {
+      type: 'draw',
+      stem: `下面方格纸的虚线是对称轴，已知三角形的一半（蓝色）。请画出这个三角形关于对称轴的另一半。`,
+      figure: {
+        kind: 'grid',
+        grid: { w: GRID_W, h: GRID_H },
+        bg: { type: 'symmetry', axis: { dir: 'v', at: axisAt }, points: base },
+        tolerance: 0.5
+      },
+      answer: JSON.stringify(answer),
+      solution: `把已知三角形的三个顶点分别关于对称轴作对称点：对称点到对称轴的距离相等，横坐标是 ${2 * axisAt} 减去原来的横坐标，纵坐标不变，连接三个对称点就得到另一半。`,
+      errorProne: '对称点到对称轴的距离没有和原顶点相等'
+    });
+  }
+  const dx = rnd(2, 4);
+  const x1 = rnd(1, 3);
+  const y1 = rnd(1, 3);
+  const base = [[x1, y1], [x1 + rnd(2, 3), y1], [x1, y1 + rnd(2, 3)]];
+  return mk(kp, {
+    type: 'draw',
+    stem: `下面方格纸中已画出一个三角形（蓝色）。请把它向右平移 ${dx} 格，画出平移后的图形。`,
+    figure: {
+      kind: 'grid',
+      grid: { w: GRID_W, h: GRID_H },
+      bg: { type: 'translate', points: base, delta: [dx, 0] },
+      tolerance: 0.5
+    },
+    answer: JSON.stringify(base.map(([x, y]) => [x + dx, y])),
+    solution: `平移不改变图形的形状和大小：把每个顶点都向右移动 ${dx} 格，再按原来的顺序连接起来。`,
+    errorProne: '平移时只移动了一部分顶点，或格数数错'
+  });
+}
+
+function drawArea(kp) {
+  const w = rnd(2, 5);
+  const h = rnd(2, 4);
+  const area = w * h;
+  const x = rnd(1, 4);
+  const y = rnd(1, 3);
+  const answer = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+  return mk(kp, {
+    type: 'draw',
+    stem: `请在方格纸上画一个面积是 ${area} 平方厘米的长方形（每个小方格边长 1 厘米）。`,
+    figure: {
+      kind: 'grid',
+      grid: { w: GRID_W, h: GRID_H },
+      bg: { type: 'target', area: area },
+      tolerance: 0.5
+    },
+    answer: JSON.stringify(answer),
+    solution: `长方形的长和宽相乘等于 ${area}，例如 ${w} × ${h} = ${area}，按 ${w} 格和 ${h} 格画出长方形即可。`,
+    errorProne: '数格数时漏算边界，或长和宽选错'
+  });
+}
 
 function fallbackQuestion(kp) {
   const a = rnd(2, 9);

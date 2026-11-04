@@ -3,6 +3,7 @@ import path from 'node:path';
 import { DATA_DIR } from './paths.js';
 import { findKp } from './curriculum.js';
 import { calcCost } from './pricing.js';
+import { validateFigure } from './geometry.js';
 
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const DEFAULTS = {
@@ -135,10 +136,16 @@ const QUESTION_SCHEMA = `严格返回如下 JSON：
 {
   "questions": [
     {
-      "type": "choice | fill | calc | word",
+      "type": "choice | fill | calc | word | draw",
       "stem": "题干文本（必填）",
       "options": ["A. xxx", "B. xxx", "C. xxx", "D. xxx"],
-      "answer": "标准答案（选择题只写选项字母，如 B；填空/计算题只写答案本身）",
+      "figure": {
+        "kind": "grid",
+        "grid": { "w": 12, "h": 9 },
+        "bg": { "type": "symmetry | translate | target | none" },
+        "tolerance": 0.5
+      },
+      "answer": "标准答案（选择题只写选项字母，如 B；填空/计算题只写答案本身；作图题写顶点坐标 JSON，如 [[2,3],[5,3],[5,7]]）",
       "solution": "分步解析，2-4 句",
       "kpId": "必须原样使用给定知识点列表中的 id",
       "difficulty": 1,
@@ -146,6 +153,19 @@ const QUESTION_SCHEMA = `严格返回如下 JSON：
     }
   ]
 }`;
+
+// 作图题的 figure 细则：只允许服务端可校验的三种结构
+const FIGURE_RULE = `作图题（type 为 "draw"）的 figure 必须符合下列结构之一，且 answer 必须是顶点坐标数组 JSON：
+1) 补全轴对称图形：
+   figure = {"kind":"grid","grid":{"w":12,"h":9},"bg":{"type":"symmetry","axis":{"dir":"v","at":6},"points":[[2,3],[5,3],[5,7]]},"tolerance":0.5}
+   要求 answer 恰好是 points 关于对称轴的镜像点集。
+2) 平移后的图形：
+   figure = {"kind":"grid","grid":{"w":12,"h":9},"bg":{"type":"translate","points":[[2,3],[5,3],[5,7]],"delta":[3,0]},"tolerance":0.5}
+   要求 answer 恰好是 points 平移 delta 后的点集。
+3) 画指定面积的多边形：
+   figure = {"kind":"grid","grid":{"w":12,"h":9},"bg":{"type":"target","area":12},"tolerance":0.5}
+   要求 answer 顶点围成的面积等于 area。
+顶点坐标用整数格点，x 向右、y 向上，范围 0..w / 0..h；不要输出像素坐标、不要输出 SVG。`;
 
 const SUBJECT_PROFILES = {
   math: {
@@ -156,11 +176,14 @@ const SUBJECT_PROFILES = {
 3. 数据要合理，计算量适中，避免过大的数字和繁琐的运算。
 4. 应用题必须给出完整题干，问句明确，答案可以是数值（不含单位）。
 5. 每道题只考查一个知识点，解析要分步写清楚，便于学生自查。
-6. 只输出 JSON，不要输出任何解释性文字、Markdown 代码块或注释。`,
-    typePlan: '选择题 1 题、填空题 1 题、计算题 1 题，其余为应用题',
-    allowedTypes: ['choice', 'fill', 'calc', 'word'],
-    answerRule: '数值题 answer 只写数值，不带单位（如 12.5、3/4，分数写最简分数）',
-    extraRule: '选择题的 options 必须以 "A. "、"B. " 开头，answer 只写字母；题干中不要标注知识点编号，不要把答案写进题干'
+6. 数学符号直接使用 Unicode：°、²、cm²、∠、∥、⊥、π、√、≈、×、÷；分数写成 3/4，带分数写成 2又1/3；禁止使用 LaTeX（\\frac、$...$）和 HTML 标签。
+7. 作图题只在知识点涉及图形与位置、面积、三角形时出现，且必须按 figure 细则返回结构化图形数据，坐标用整数格点；题干必须要求学生“画出图形”，不要要求“写出/填写坐标”，答案里的坐标数组只供系统判分。
+8. 题干中不得出现“见图、如图、下图、图中、方格纸”等依赖配图的表述；只有 type 为 draw 且提供了 figure 时才允许提到方格纸。
+9. 只输出 JSON，不要输出任何解释性文字、Markdown 代码块或注释。`,
+    typePlan: '选择题 1 题、填空题 1 题、计算题 1 题，其余为应用题；若知识点适合作图，可把其中 1 题改为作图题（draw）',
+    allowedTypes: ['choice', 'fill', 'calc', 'word', 'draw'],
+    answerRule: '数值题 answer 只写数值，不带单位（如 12.5、3/4，分数写最简分数）；作图题 answer 写顶点坐标 JSON，如 [[2,3],[5,3],[5,7]]',
+    extraRule: '选择题的 options 必须以 "A. "、"B. " 开头，answer 只写字母；题干中不要标注知识点编号，不要把答案写进题干；作图题必须同时给出 figure，且 answer 的点集必须与 figure 的约束自洽'
   },
   chinese: {
     system: `你是一位资深的深圳小学语文教师，熟悉人民教育出版社（统编版）五年级上下册教材。
@@ -190,6 +213,14 @@ const SUBJECT_PROFILES = {
   }
 };
 
+function safeJson(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 function normalizeQuestions(raw, allowedKps, count, allowedTypes = ['choice', 'fill', 'calc', 'word']) {
   const list = Array.isArray(raw?.questions) ? raw.questions : [];
   if (!list.length) throw new Error('模型没有生成题目');
@@ -200,13 +231,32 @@ function normalizeQuestions(raw, allowedKps, count, allowedTypes = ['choice', 'f
   for (const item of list) {
     if (!item || typeof item.stem !== 'string' || !item.stem.trim()) continue;
     let answer = item.answer;
-    if (Array.isArray(answer)) answer = answer.join('，');
+    if (Array.isArray(answer)) {
+      const isPoints = answer.length > 0 && Array.isArray(answer[0]);
+      answer = isPoints ? JSON.stringify(answer) : answer.join('，');
+    }
     if (answer == null || String(answer).trim() === '') continue;
 
     let type = String(item.type || 'fill').toLowerCase();
     if (!allowedTypes.includes(type)) type = allowedTypes.includes('fill') ? 'fill' : allowedTypes[0];
     const options = Array.isArray(item.options) ? item.options.map((o) => String(o)).filter(Boolean).slice(0, 4) : [];
     if (type === 'choice' && options.length < 2) type = 'fill';
+
+    // 作图题：必须带结构化 figure，且标准答案要能通过几何校验，否则降级为普通题
+    let figure = null;
+    if (type === 'draw') {
+      const raw = typeof item.figure === 'string' ? safeJson(item.figure) : item.figure;
+      if (raw && typeof raw === 'object' && !validateFigure(raw, answer)) {
+        figure = raw;
+      } else {
+        type = 'fill';
+      }
+    }
+
+    // 题干提到“见图/方格纸”但没带图形数据的题，学生无法作答，直接丢弃
+    if (!figure && /见图|如下图|下图|上图|如图|图中|方格纸/.test(item.stem)) continue;
+    // 作图题必须让学生“画”，不能要求“写出坐标”（作答区只有方格纸，没有输入框）
+    if (figure && /写出.*坐标|填写.*坐标|坐标是/.test(item.stem)) continue;
 
     let kp = byId.get(String(item.kpId ?? '')) || byName.get(String(item.kpName ?? '')) || null;
     if (!kp) {
@@ -220,6 +270,7 @@ function normalizeQuestions(raw, allowedKps, count, allowedTypes = ['choice', 'f
       type,
       stem: item.stem.trim(),
       options: type === 'choice' ? options : null,
+      figure,
       answer: String(answer).trim(),
       solution: String(item.solution || '').trim(),
       kpId: kp.id,
@@ -274,7 +325,7 @@ ${wrongLine}
 - ${profile.answerRule}
 - ${profile.extraRule}
 - 每题 kpId 必须从上面列表中精确复制
-
+${profile.allowedTypes.includes('draw') ? `\n${FIGURE_RULE}\n` : ''}
 ${QUESTION_SCHEMA}`;
 
   const { content, usage } = await chat(
@@ -329,18 +380,36 @@ export async function generateQuestions(params) {
   for (let remaining = total; remaining > 0; remaining -= MAX_BATCH_SIZE) {
     sizes.push(Math.min(MAX_BATCH_SIZE, remaining));
   }
+
+  let questions;
+  let usage;
   if (sizes.length === 1) {
-    return generateBatch({ ...params, count: total, batchIndex: 1, batchTotal: 1 });
+    const result = await generateBatch({ ...params, count: total, batchIndex: 1, batchTotal: 1 });
+    questions = result.questions;
+    usage = result.usage;
+  } else {
+    const results = await Promise.all(
+      sizes.map((size, i) =>
+        generateBatch({ ...params, count: size, batchIndex: i + 1, batchTotal: sizes.length })
+      )
+    );
+    questions = results.flatMap((result) => result.questions).slice(0, total);
+    usage = mergeUsage(results.map((result) => result.usage));
   }
-  const results = await Promise.all(
-    sizes.map((size, i) =>
-      generateBatch({ ...params, count: size, batchIndex: i + 1, batchTotal: sizes.length })
-    )
-  );
-  return {
-    questions: results.flatMap((result) => result.questions).slice(0, total),
-    usage: mergeUsage(results.map((result) => result.usage))
-  };
+
+  // 部分题目因缺少图形/无效答案被丢弃时，补齐一次，避免题量少于所选数量
+  const missing = total - questions.length;
+  if (missing > 0) {
+    try {
+      const extra = await generateBatch({ ...params, count: Math.min(missing, MAX_BATCH_SIZE), batchIndex: 1, batchTotal: 1 });
+      questions = questions.concat(extra.questions).slice(0, total);
+      usage = mergeUsage([usage, extra.usage]);
+    } catch {
+      /* 补齐失败时按现有题量返回 */
+    }
+  }
+
+  return { questions, usage };
 }
 
 export async function analyzeWeakness(payload) {

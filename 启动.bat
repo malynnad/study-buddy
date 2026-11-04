@@ -9,5 +9,5 @@ if errorlevel 1 (
 echo Starting Study Buddy at http://localhost:3000
 echo Close this window to stop the server.
 start "" /b powershell -NoProfile -WindowStyle Hidden -Command "Start-Sleep -Seconds 2; Start-Process 'http://localhost:3000'"
-node server.js
+node --use-system-ca server.js
 pause

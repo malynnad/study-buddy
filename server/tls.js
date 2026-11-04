@@ -28,7 +28,24 @@ function readKeychainCertificates() {
 }
 
 export function trustSystemCertificates() {
-  if (process.platform !== 'darwin' || typeof tls.setDefaultCACertificates !== 'function') return;
+  if (typeof tls.setDefaultCACertificates !== 'function') return;
+
+  // Windows：Node 默认不使用系统证书库，用启动参数 --use-system-ca（Node 24+）或这里显式合并
+  if (process.platform === 'win32') {
+    try {
+      const system = tls.getCACertificates('system') || [];
+      if (system.length) {
+        const base = tls.getCACertificates('default');
+        tls.setDefaultCACertificates([...base, ...system]);
+        console.log(`已载入系统证书 ${system.length} 张`);
+      }
+    } catch {
+      /* 系统证书不可用时保持 Node 默认证书库 */
+    }
+    return;
+  }
+
+  if (process.platform !== 'darwin') return;
 
   const cacheFile = path.join(DATA_DIR, 'system-ca.pem');
   let bundle = '';

@@ -1500,3 +1500,83 @@ details.solution[open] summary {
   }
 }
 
+
+/* ---------- 作图题 ---------- */
+.figure-wrap {
+  margin: 14px 0 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.figure-svg {
+  width: min(100%, 460px);
+  height: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  touch-action: manipulation;
+}
+
+.grid-line {
+  stroke: var(--line-soft);
+  stroke-width: 1;
+}
+
+.figure-axis {
+  stroke: var(--ink-3);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+
+.figure-given {
+  fill: var(--accent-soft);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.figure-student {
+  fill: rgba(94, 129, 172, 0.16);
+  stroke: var(--accent-ink);
+  stroke-width: 2;
+}
+
+.figure-answer {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+.figure-dot {
+  fill: var(--accent-ink);
+}
+
+.grid-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.grid-hit:hover {
+  fill: rgba(94, 129, 172, 0.18);
+}
+
+.figure-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.figure-count {
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .figure-svg {
+    width: 100%;
+  }
+}
