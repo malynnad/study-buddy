@@ -510,6 +510,321 @@ const GENERATORS = {
   }
 };
 
+// —— 北师大版五上（新版）章节的离线兜底题 ——
+const savedAreaGenerator = GENERATORS['5a-u4'];
+const savedSymmetryGenerator = GENERATORS['5a-u2'];
+const savedFactorsGenerator = GENERATORS['5a-u3'];
+
+function decimalAddSub(kp) {
+  const kind = kp.id.slice(-1);
+  if (kind === '1') {
+    const n = rnd(5, 95);
+    return mk(kp, {
+      type: 'fill',
+      stem: `${n} 个 0.01 组成的数是多少？`,
+      answer: num(n / 100),
+      solution: `0.01 是百分之一，${n} 个 0.01 就是 ${n}/100，写作 ${num(n / 100)}。`,
+      errorProne: '小数点位置写错'
+    });
+  }
+  if (kind === '2') {
+    let a = rnd(120, 980) / 100;
+    let b = rnd(120, 980) / 100;
+    while (Math.abs(a - b) < 1e-9) b = rnd(120, 980) / 100;
+    const bigger = Math.max(a, b);
+    return mk(kp, {
+      type: 'fill',
+      stem: `比较 ${num(a)} 和 ${num(b)} 的大小，较大的数是（　）。`,
+      answer: num(bigger),
+      solution: `先比较整数部分，整数部分相同再比较十分位、百分位，较大的是 ${num(bigger)}。`,
+      errorProne: '误以为小数位数多的数更大'
+    });
+  }
+  if (kind === '3') {
+    const a = rnd(120, 980) / 100;
+    const b = rnd(20, 500) / 100;
+    return mk(kp, {
+      type: 'calc',
+      stem: `计算：${num(a)} + ${num(b)} =`,
+      answer: num(a + b),
+      solution: `小数点对齐，按整数加法计算，结果是 ${num(a + b)}。`,
+      errorProne: '小数点没有对齐'
+    });
+  }
+  const a = rnd(300, 900) / 100;
+  const b = rnd(100, 400) / 100;
+  const c = rnd(50, 250) / 100;
+  return mk(kp, {
+    type: 'calc',
+    stem: `计算：${num(a)} + ${num(b)} - ${num(c)} =`,
+    answer: num(a + b - c),
+    solution: `按从左到右的顺序计算：${num(a)} + ${num(b)} = ${num(a + b)}，再减 ${num(c)} 得 ${num(a + b - c)}。`,
+    errorProne: '运算顺序错误'
+  });
+}
+
+function triangleQuestion(kp) {
+  const kind = kp.id.slice(-1);
+  if (kind === '1') {
+    const a = rnd(3, 7);
+    const b = rnd(3, 7);
+    return mk(kp, {
+      type: 'fill',
+      stem: `三角形两边的长分别是 ${a} 厘米和 ${b} 厘米，第三边的长必须小于多少厘米？`,
+      answer: num(a + b),
+      solution: `三角形任意两边之和大于第三边，所以第三边要小于 ${a} + ${b} = ${a + b}（厘米）。`,
+      errorProne: '把两边之和当成第三边的最大值时忘记“小于”'
+    });
+  }
+  if (kind === '2') {
+    return mk(kp, {
+      type: 'fill',
+      stem: '一个三角形可以画多少条高？',
+      answer: '3',
+      solution: '三角形有三个顶点，每个顶点对应一条高，所以一共可以画 3 条高。',
+      errorProne: '只画了一条高'
+    });
+  }
+  if (kind === '3') {
+    const pairs = [
+      [40, 60],
+      [30, 40],
+      [45, 45]
+    ];
+    const [a, b] = pick(pairs);
+    const third = 180 - a - b;
+    const type = third === 90 ? '直角' : third > 90 ? '钝角' : '锐角';
+    return mk(kp, {
+      type: 'choice',
+      stem: `一个三角形中有两个角分别是 ${a}° 和 ${b}°，这个三角形是（　）。`,
+      options: ['A. 锐角三角形', 'B. 直角三角形', 'C. 钝角三角形', 'D. 无法确定'],
+      answer: type === '锐角' ? 'A' : type === '直角' ? 'B' : 'C',
+      solution: `第三个角是 180° - ${a}° - ${b}° = ${third}°，所以是${type}三角形。`,
+      errorProne: '忘记先求第三个角'
+    });
+  }
+  const a = rnd(30, 80);
+  const b = rnd(30, 80);
+  return mk(kp, {
+    type: 'fill',
+    stem: `三角形中两个角分别是 ${a}° 和 ${b}°，第三个角是多少度？`,
+    answer: num(180 - a - b),
+    solution: `三角形内角和是 180°，第三个角是 180° - ${a}° - ${b}° = ${180 - a - b}°。`,
+    errorProne: '内角和记错'
+  });
+}
+
+function decimalMul(kp) {
+  const kind = kp.id.slice(-1);
+  if (kind === '1') {
+    const a = rnd(11, 99) / 10;
+    const n = rnd(2, 9);
+    return mk(kp, {
+      type: 'calc',
+      stem: `计算：${num(a)} × ${n} =`,
+      answer: num(a * n),
+      solution: `先按 ${Math.round(a * 10)} × ${n} 计算，再点上一位小数，结果是 ${num(a * n)}。`,
+      errorProne: '积的小数位数点错'
+    });
+  }
+  if (kind === '2') {
+    const a = rnd(11, 99) / 10;
+    const b = rnd(11, 99) / 10;
+    return mk(kp, {
+      type: 'calc',
+      stem: `计算：${num(a)} × ${num(b)} =`,
+      answer: num(a * b),
+      solution: `先按整数乘法计算，两个因数一共有两位小数，积也有两位小数，结果是 ${num(a * b)}。`,
+      errorProne: '积的小数位数判断错误'
+    });
+  }
+  if (kind === '3') {
+    const a = rnd(11, 99) / 10;
+    const b = rnd(11, 99) / 10;
+    const product = Math.round(a * b * 10) / 10;
+    return mk(kp, {
+      type: 'calc',
+      stem: `计算：${num(a)} × ${num(b)} ≈（结果保留一位小数）`,
+      answer: num(product),
+      solution: `${num(a)} × ${num(b)} = ${num(a * b)}，保留一位小数是 ${num(product)}。`,
+      errorProne: '保留一位小数时看错数位'
+    });
+  }
+  const a = rnd(11, 49) / 10;
+  const b = rnd(2, 6);
+  const c = rnd(11, 49) / 10;
+  return mk(kp, {
+    type: 'calc',
+    stem: `计算：${num(a)} × ${b} + ${num(c)} =`,
+    answer: num(a * b + c),
+    solution: `先算乘法 ${num(a)} × ${b} = ${num(a * b)}，再加上 ${num(c)}，得 ${num(a * b + c)}。`,
+    errorProne: '先算了加法'
+  });
+}
+
+function choice(kp, { stem, correct, wrongs, solution, errorProne }) {
+  const opts = [correct, ...wrongs].sort(() => Math.random() - 0.5);
+  return mk(kp, {
+    type: 'choice',
+    stem,
+    options: opts.map((t, i) => `${'ABCD'[i]}. ${t}`),
+    answer: 'ABCD'[opts.indexOf(correct)],
+    solution,
+    errorProne
+  });
+}
+
+function letterAlgebra(kp) {
+  const kind = kp.id.slice(-1);
+  if (kind === '1') {
+    const a = rnd(2, 9);
+    const v = pick(['a', 'x', 'n', 'm']);
+    return choice(kp, {
+      stem: `一个数 ${v} 乘 ${a}，用字母表示的式子是哪一项？`,
+      correct: `${a}${v}`,
+      wrongs: [`${v}+${a}`, `${v}÷${a}`, `${a}+${v}`],
+      solution: `数字与字母相乘时，乘号可以省略，数字写在字母前面，所以是 ${a}${v}。`,
+      errorProne: '把乘法写成加法'
+    });
+  }
+  if (kind === '2') {
+    const n = rnd(3, 20);
+    return choice(kp, {
+      stem: `小明原有 x 元，又得到 ${n} 元，现在有多少元？`,
+      correct: `x+${n}`,
+      wrongs: [`x-${n}`, `${n}x`, `${n}÷x`],
+      solution: `在原有的 x 元基础上增加 ${n} 元，所以是 x+${n}。`,
+      errorProne: '数量关系理解反了'
+    });
+  }
+  if (kind === '3') {
+    if (Math.random() < 0.5) {
+      const v = pick(['a', 'x', 'n']);
+      return choice(kp, {
+        stem: `正方形的边长是 ${v}，它的周长用字母表示是（　）。`,
+        correct: `4${v}`,
+        wrongs: [`${v}+4`, `2${v}`, `${v}²`],
+        solution: `正方形有 4 条相等的边，周长是 ${v}+${v}+${v}+${v}，即 4${v}。`,
+        errorProne: '把周长和面积公式混淆'
+      });
+    }
+    return choice(kp, {
+      stem: '长方形的长是 a，宽是 b，它的周长用字母表示是（　）。',
+      correct: '2(a+b)',
+      wrongs: ['ab', 'a+b', '2ab'],
+      solution: '长方形周长 = (长 + 宽) × 2，即 2(a+b)。',
+      errorProne: '把周长和面积公式混淆'
+    });
+  }
+  const x = rnd(3, 9);
+  const k = rnd(2, 5);
+  const b = rnd(1, 9);
+  return mk(kp, {
+    type: 'calc',
+    stem: `当 x=${x} 时，${k}x+${b} 的值是多少？`,
+    answer: num(k * x + b),
+    solution: `把 x=${x} 代入：${k}×${x}+${b} = ${k * x}+${b} = ${k * x + b}。`,
+    errorProne: '代入后运算顺序错误'
+  });
+}
+
+function probabilityQuestion(kp) {
+  if (kp.id.endsWith('2')) {
+    const red = rnd(2, 6);
+    const fair = Math.random() < 0.5;
+    const blue = fair ? red : red + rnd(1, 4);
+    return choice(kp, {
+      stem: `袋子里有 ${red} 个红球和 ${blue} 个蓝球，任意摸出一个，摸到红球和蓝球的可能性${fair ? '相等' : '不相等'}。这个游戏规则公平吗？`,
+      correct: fair ? '公平' : '不公平',
+      wrongs: fair ? ['不公平', '无法确定', '红球一定赢'] : ['公平', '无法确定', '蓝球一定赢'],
+      solution: fair
+        ? `红球和蓝球的数量相同，摸到的可能性都是 1/2，所以游戏规则公平。`
+        : `红球 ${red} 个、蓝球 ${blue} 个，数量不同，摸到的可能性不相等，所以游戏规则不公平。`,
+      errorProne: '只看球的总数，没有比较两种球的数量'
+    });
+  }
+  const red = rnd(2, 6);
+  const blue = rnd(2, 6);
+  return mk(kp, {
+    type: 'fill',
+    stem: `盒子里有 ${red} 个红球和 ${blue} 个蓝球，任意摸出一个，摸到红球的可能性是几分之几？`,
+    answer: frac(red, red + blue),
+    solution: `一共有 ${red + blue} 个球，红球 ${red} 个，摸到红球的可能性是 ${red}/${red + blue} = ${frac(red, red + blue)}。`,
+    errorProne: '把球的总数算错，或忘记约分'
+  });
+}
+
+function designQuestion(kp) {
+  const mode = rnd(1, 3);
+  if (mode === 1) {
+    return choice(kp, {
+      stem: '把一个图形沿一条直线对折，直线两旁的部分能完全重合，这样的图形叫做（　）图形。',
+      correct: '轴对称',
+      wrongs: ['平移', '旋转', '放大'],
+      solution: '沿一条直线对折后两边完全重合的图形是轴对称图形，这条直线就是对称轴。',
+      errorProne: '与平移混淆'
+    });
+  }
+  if (mode === 2) {
+    const shape = pick(['正方形', '长方形', '等边三角形']);
+    const axes = shape === '正方形' ? 4 : shape === '长方形' ? 2 : 3;
+    return mk(kp, {
+      type: 'fill',
+      stem: `${shape}有几条对称轴？`,
+      answer: String(axes),
+      solution: `${shape}沿不同方向的直线对折都能完全重合，一共可以找到 ${axes} 条对称轴。`,
+      errorProne: '容易漏数斜方向的对称轴'
+    });
+  }
+  const n = rnd(2, 8);
+  return choice(kp, {
+    stem: `设计图案时，把一个图形沿直线方向移动 ${n} 格，这种方法叫做（　）。`,
+    correct: '平移',
+    wrongs: ['轴对称', '旋转', '放大'],
+    solution: `沿直线方向移动若干格、形状和大小都不变，这种变换叫做平移。`,
+    errorProne: '把平移和轴对称混淆'
+  });
+}
+
+function chickenRabbit(kp) {
+  const chickens = rnd(4, 12);
+  const rabbits = rnd(3, 10);
+  const heads = chickens + rabbits;
+  const legs = chickens * 2 + rabbits * 4;
+  return mk(kp, {
+    type: 'word',
+    stem: `笼子里有鸡和兔共 ${heads} 只，一共有 ${legs} 条腿。鸡有多少只？`,
+    answer: num(chickens),
+    solution: `假设全是鸡，共有 ${heads * 2} 条腿，比实际少 ${legs - heads * 2} 条。每把一只鸡换成兔多 2 条腿，所以兔有 ${(legs - heads * 2) / 2} 只，鸡有 ${heads} - ${(legs - heads * 2) / 2} = ${chickens} 只。`,
+    errorProne: '假设后忘记按腿数差调整'
+  });
+}
+
+function areaEstimate(kp) {
+  const n = rnd(5, 20) * 5;
+  return mk(kp, {
+    type: 'fill',
+    stem: `每片落叶的面积约 20 平方厘米，${n} 片落叶的面积约是多少平方分米？`,
+    answer: num(n / 5),
+    solution: `20 × ${n} = ${20 * n}（平方厘米），${20 * n} 平方厘米 = ${n / 5} 平方分米。`,
+    errorProne: '平方厘米与平方分米的进率记错'
+  });
+}
+
+Object.assign(GENERATORS, {
+  '5a-u1': decimalAddSub,
+  '5a-u2': triangleQuestion,
+  '5a-u3': decimalMul,
+  '5a-u4': letterAlgebra,
+  '5a-u5': savedAreaGenerator,
+  '5a-u6': savedSymmetryGenerator,
+  '5a-u7': savedFactorsGenerator,
+  '5a-u8': probabilityQuestion,
+  '5a-u9': designQuestion,
+  '5a-u10': chickenRabbit,
+  '5a-u11': areaEstimate
+});
+
 function fallbackQuestion(kp) {
   const a = rnd(2, 9);
   const b = rnd(2, 9);

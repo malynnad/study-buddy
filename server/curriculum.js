@@ -12,64 +12,99 @@ export const SUBJECTS = [
         units: [
           {
             id: '5a-u1',
-            name: '小数除法',
+            name: '小数的再认识和加减法',
             kps: [
-              { id: '5a-u1-1', name: '小数除以整数', desc: '小数除以整数的竖式计算，商的小数点与被除数的小数点对齐，除不尽时在余数后补 0 继续除' },
-              { id: '5a-u1-2', name: '除数是小数的除法', desc: '利用商不变性质，把被除数与除数同时扩大相同倍数，转化为除数是整数的除法' },
-              { id: '5a-u1-3', name: '商的近似值与循环小数', desc: '用四舍五入法保留指定位数（如保留两位小数）；循环小数的意义与简写记法' },
-              { id: '5a-u1-4', name: '小数四则混合运算', desc: '小数四则混合运算的运算顺序，以及运用运算律进行简便计算' }
+              { id: '5a-u1-1', name: '小数的意义与读写', desc: '小数的数位、计数单位，小数与分数的联系，正确读写小数' },
+              { id: '5a-u1-2', name: '小数的大小比较', desc: '从整数部分到小数部分依次比较，判断小数的大小' },
+              { id: '5a-u1-3', name: '小数加减法', desc: '小数点对齐，按整数加减法计算，结果点上小数点' },
+              { id: '5a-u1-4', name: '小数加减混合运算', desc: '小数加减混合运算的顺序，以及运用运算律进行简便计算' }
             ]
           },
           {
             id: '5a-u2',
-            name: '轴对称和平移',
+            name: '三角形的再认识',
             kps: [
-              { id: '5a-u2-1', name: '轴对称再认识', desc: '识别轴对称图形、找对称轴、补全轴对称图形的另一半' },
-              { id: '5a-u2-2', name: '图形的平移', desc: '判断图形平移的方向与格数，按指定方向平移图形' }
+              { id: '5a-u2-1', name: '三角形的三边关系', desc: '三角形任意两边之和大于第三边，判断三条线段能否围成三角形' },
+              { id: '5a-u2-2', name: '三角形的高与底', desc: '认识三角形的底和高，会画指定底边上的高' },
+              { id: '5a-u2-3', name: '三角形的分类', desc: '按角分为锐角、直角、钝角三角形；按边分为等腰、等边三角形' },
+              { id: '5a-u2-4', name: '三角形的内角和', desc: '三角形内角和是 180°，已知两个角求第三个角' }
+            ]
+          },
+          {
+            id: '5a-u9',
+            name: '综合实践：小小设计师',
+            kps: [
+              { id: '5a-u9-1', name: '轴对称与平移的应用', desc: '运用轴对称、平移等方法设计图案，感受图形变换' }
             ]
           },
           {
             id: '5a-u3',
-            name: '倍数与因数',
+            name: '小数乘法',
             kps: [
-              { id: '5a-u3-1', name: '倍数与因数', desc: '倍数与因数的意义，找一个数的倍数和因数，因数配对成对寻找' },
-              { id: '5a-u3-2', name: '2、3、5的倍数特征', desc: '2、5 的倍数看个位；3 的倍数看各位数字之和是否被 3 整除；奇偶数判断' },
-              { id: '5a-u3-3', name: '质数与合数', desc: '质数、合数、1 的分类与判断，20 以内的质数' },
-              { id: '5a-u3-4', name: '数的奇偶性', desc: '奇偶数在加减运算中的变化规律，用奇偶性解决实际问题' }
+              { id: '5a-u3-1', name: '小数乘整数', desc: '小数乘整数的意义与竖式计算，积的小数位数' },
+              { id: '5a-u3-2', name: '小数乘小数', desc: '按整数乘法计算，再根据因数中小数位数确定积的小数点' },
+              { id: '5a-u3-3', name: '积的近似值', desc: '用四舍五入法求积的近似值，保留指定小数位数' },
+              { id: '5a-u3-4', name: '小数乘法混合运算', desc: '小数乘法与加减法的混合运算，运用运算律简便计算' }
             ]
           },
           {
             id: '5a-u4',
-            name: '多边形的面积',
+            name: '用字母表示（一）',
             kps: [
-              { id: '5a-u4-1', name: '平行四边形的面积', desc: '平行四边形面积＝底×高（S=ah），注意底与高的对应关系' },
-              { id: '5a-u4-2', name: '三角形的面积', desc: '三角形面积＝底×高÷2（S=ah÷2），等底等高三角形面积相等' },
-              { id: '5a-u4-3', name: '梯形的面积', desc: '梯形面积＝（上底＋下底）×高÷2（S=(a+b)h÷2）' }
+              { id: '5a-u4-1', name: '用字母表示数', desc: '用字母表示数，理解字母可以表示任意数，书写时省略乘号' },
+              { id: '5a-u4-2', name: '用字母表示数量关系', desc: '用含字母的式子表示实际问题中的数量关系' },
+              { id: '5a-u4-3', name: '用字母表示公式', desc: '用字母表示周长、面积等计算公式' },
+              { id: '5a-u4-4', name: '求含有字母的式子的值', desc: '把字母的值代入式子，求出式子的结果' }
             ]
           },
           {
             id: '5a-u5',
-            name: '分数的意义',
+            name: '多边形的面积',
             kps: [
-              { id: '5a-u5-1', name: '分数的再认识', desc: '分数的意义、真分数与假分数、带分数与假分数的互化' },
-              { id: '5a-u5-2', name: '分数与除法', desc: '分数与除法的关系：a÷b＝a/b（b≠0），求一个数是另一个数的几分之几' },
-              { id: '5a-u5-3', name: '分数基本性质与约分', desc: '分子分母同时乘或除以相同的数（0 除外）大小不变；约分成最简分数' },
-              { id: '5a-u5-4', name: '最大公因数与最小公倍数', desc: '用列举法或短除法求两个数的最大公因数和最小公倍数' },
-              { id: '5a-u5-5', name: '通分与分数大小比较', desc: '通分后比较分数大小，分子分母都不同的分数比较方法' }
+              { id: '5a-u5-1', name: '平行四边形的面积', desc: '平行四边形面积＝底×高（S=ah），注意底与高的对应关系' },
+              { id: '5a-u5-2', name: '三角形的面积', desc: '三角形面积＝底×高÷2（S=ah÷2），等底等高三角形面积相等' },
+              { id: '5a-u5-3', name: '梯形的面积', desc: '梯形面积＝（上底＋下底）×高÷2（S=(a+b)h÷2）' }
+            ]
+          },
+          {
+            id: '5a-u10',
+            name: '数学好玩：鸡兔同笼',
+            kps: [
+              { id: '5a-u10-1', name: '鸡兔同笼问题', desc: '用假设法、列表法解决鸡兔同笼问题，根据腿数差调整只数' }
             ]
           },
           {
             id: '5a-u6',
-            name: '组合图形的面积',
+            name: '图形的位置与运动（一）',
             kps: [
-              { id: '5a-u6-1', name: '组合图形的面积', desc: '用分割法、添补法计算由基本图形拼成的组合图形面积' },
-              { id: '5a-u6-2', name: '公顷与平方千米', desc: '1 公顷＝10000 平方米，1 平方千米＝100 公顷，面积单位换算' }
+              { id: '5a-u6-1', name: '轴对称', desc: '识别轴对称图形、找对称轴、补全轴对称图形的另一半' },
+              { id: '5a-u6-2', name: '图形的平移', desc: '判断图形平移的方向与格数，按指定方向平移图形' }
             ]
           },
           {
             id: '5a-u7',
+            name: '倍数与因数',
+            kps: [
+              { id: '5a-u7-1', name: '倍数与因数', desc: '倍数与因数的意义，找一个数的倍数和因数，因数配对成对寻找' },
+              { id: '5a-u7-2', name: '2、3、5的倍数特征', desc: '2、5 的倍数看个位；3 的倍数看各位数字之和是否被 3 整除；奇偶数判断' },
+              { id: '5a-u7-3', name: '质数与合数', desc: '质数、合数、1 的分类与判断，20 以内的质数' },
+              { id: '5a-u7-4', name: '数的奇偶性', desc: '奇偶数在加减运算中的变化规律，用奇偶性解决实际问题' }
+            ]
+          },
+          {
+            id: '5a-u8',
             name: '可能性',
-            kps: [{ id: '5a-u7-1', name: '可能性大小', desc: '用分数表示可能性大小，判断游戏规则是否公平' }]
+            kps: [
+              { id: '5a-u8-1', name: '可能性大小', desc: '判断事件发生的可能性大小，用分数表示可能性' },
+              { id: '5a-u8-2', name: '游戏公平性', desc: '比较双方获胜的可能性，判断游戏规则是否公平' }
+            ]
+          },
+          {
+            id: '5a-u11',
+            name: '综合实践：多少落叶能铺满',
+            kps: [
+              { id: '5a-u11-1', name: '面积估算与测量', desc: '估计不规则图形的面积，用面积单位换算解决实际问题' }
+            ]
           }
         ]
       },
@@ -162,66 +197,88 @@ export const SUBJECTS = [
         units: [
           {
             id: 'cn-5a-u1',
-            name: '第一单元 · 万物有灵',
+            name: '第一单元',
             kps: [
-              { id: 'cn-5a-u1-1', name: '本单元字音字形', desc: '《白鹭》《落花生》《桂花雨》中的生字读音、易错字形、多音字辨析' },
-              { id: 'cn-5a-u1-2', name: '借物抒情的表达', desc: '体会作者借助具体事物表达情感的方法，理解关键句的含义' }
+              { id: 'cn-5a-u1-1', name: '1 桂花雨', desc: '生字词与多音字；借桂花表达思乡之情，体会“摇花乐”的场景描写' },
+              { id: 'cn-5a-u1-2', name: '2 落花生', desc: '生字词与分角色朗读；借物喻人的写法，理解“人要做有用的人”' },
+              { id: 'cn-5a-u1-3', name: '3* 珍珠鸟', desc: '略读课文：生字词、作者与珍珠鸟的情感变化，体会“信赖”' },
+              { id: 'cn-5a-u1-4', name: '口语交际·习作：制定班级公约 / 我的心爱之物', desc: '讨论并制定规则；按顺序写心爱之物的样子、来历和故事' },
+              { id: 'cn-5a-u1-5', name: '语文园地一', desc: '词句段运用中的对比写法、日积月累的古诗名句' }
             ]
           },
           {
             id: 'cn-5a-u2',
-            name: '第二单元 · 提高阅读速度',
+            name: '第二单元（阅读策略）',
             kps: [
-              { id: 'cn-5a-u2-1', name: '课文内容与中心', desc: '《搭石》《将相和》《冀中的地道战》主要内容和人物品质的概括' },
-              { id: 'cn-5a-u2-2', name: '阅读方法运用', desc: '集中注意力、连词成句地读，抓住关键词句快速把握信息' }
+              { id: 'cn-5a-u2-1', name: '4 冀中的地道战', desc: '生字词；地道式样与作用，按“总—分”结构提取信息' },
+              { id: 'cn-5a-u2-2', name: '5 将相和', desc: '完璧归赵、渑池之会、负荆请罪三个故事与人物特点' },
+              { id: 'cn-5a-u2-3', name: '6 什么比猎豹的速度更快', desc: '列数字、作比较等说明方法；练习提高阅读速度' },
+              { id: 'cn-5a-u2-4', name: '7 “诺曼底号”遇难记', desc: '人物语言与环境描写，哈尔威船长的品质' },
+              { id: 'cn-5a-u2-5', name: '阅读策略：提高阅读速度', desc: '集中注意力、连词成句地读、抓关键词句快速把握信息' },
+              { id: 'cn-5a-u2-6', name: '习作·“漫画”老师 / 语文园地', desc: '用夸张的事例突出人物特点；语文园地词句运用' }
             ]
           },
           {
             id: 'cn-5a-u3',
-            name: '第三单元 · 民间故事',
+            name: '第三单元',
             kps: [
-              { id: 'cn-5a-u3-1', name: '民间故事情节与人物', desc: '《猎人海力布》《牛郎织女》的情节梳理与人物形象分析' },
-              { id: 'cn-5a-u3-2', name: '成语与俗语积累', desc: '本单元涉及的成语、俗语含义及在句子中的正确使用' }
+              { id: 'cn-5a-u3-1', name: '8 猎人海力布', desc: '情节梳理与海力布的品质；练习创造性复述' },
+              { id: 'cn-5a-u3-2', name: '9 牛郎织女（一）', desc: '故事情节与人物形象，根据情节想象补白' },
+              { id: 'cn-5a-u3-3', name: '10* 牛郎织女（二）', desc: '略读课文：故事结局与民间故事的特点' },
+              { id: 'cn-5a-u3-4', name: '口语交际·讲民间故事', desc: '讲清故事情节，加入动作、神态和想象' },
+              { id: 'cn-5a-u3-5', name: '习作·故事新编 / 语文园地', desc: '改编民间故事；语文园地词句运用与快乐读书吧《从前有座山》' }
             ]
           },
           {
             id: 'cn-5a-u4',
-            name: '第四单元 · 家国情怀',
+            name: '第四单元',
             kps: [
-              { id: 'cn-5a-u4-1', name: '古诗三首默写与理解', desc: '《示儿》《题临安邸》《己亥杂诗》的默写、诗句意思与表达的情感' },
-              { id: 'cn-5a-u4-2', name: '课文内容理解', desc: '《少年中国说》《圆明园的毁灭》《小岛》中的重点句段与情感' }
+              { id: 'cn-5a-u4-1', name: '11 古诗三首（示儿·题临安邸·己亥杂诗）', desc: '默写、诗句意思与表达的爱国情感' },
+              { id: 'cn-5a-u4-2', name: '12 少年中国说（节选）', desc: '重点文言词句、排比句式与象征手法' },
+              { id: 'cn-5a-u4-3', name: '13 圆明园的毁灭', desc: '重点句段、对比写法与表达的情感' },
+              { id: 'cn-5a-u4-4', name: '14* 梅兰芳蓄须明志', desc: '略读课文：主要事件与人物品质' },
+              { id: 'cn-5a-u4-5', name: '习作·二十年后的家乡 / 语文园地', desc: '列提纲写想象作文；语文园地词句运用' }
             ]
           },
           {
             id: 'cn-5a-u5',
-            name: '第五单元 · 说明文',
+            name: '第五单元（习作单元）',
             kps: [
-              { id: 'cn-5a-u5-1', name: '说明方法辨析', desc: '列数字、作比较、打比方、举例子、分类别等说明方法及其作用' },
-              { id: 'cn-5a-u5-2', name: '说明文语言特点', desc: '《太阳》《松鼠》中语言准确、生动的表达，词语能否删换的判断' }
+              { id: 'cn-5a-u5-1', name: '15 太阳', desc: '列数字、作比较、打比方、举例子等说明方法及其作用' },
+              { id: 'cn-5a-u5-2', name: '16 金字塔', desc: '非连续性文本阅读，提取关键信息' },
+              { id: 'cn-5a-u5-3', name: '例文：鲸 / 风向袋的制作', desc: '学习例文的说明顺序和说明方法' },
+              { id: 'cn-5a-u5-4', name: '习作·介绍一种事物', desc: '抓住事物特点，按一定顺序、用说明方法写作' }
             ]
           },
           {
             id: 'cn-5a-u6',
-            name: '第六单元 · 父母之爱',
+            name: '第六单元',
             kps: [
-              { id: 'cn-5a-u6-1', name: '场景与细节描写', desc: '《慈母情深》《父爱之舟》中的场景、细节描写及其表达效果' },
-              { id: 'cn-5a-u6-2', name: '体会作者情感', desc: '结合具体语句体会父母之爱，概括文章表达的情感' }
+              { id: 'cn-5a-u6-1', name: '17 慈母情深', desc: '场景与细节描写，反复出现的词句及其表达效果' },
+              { id: 'cn-5a-u6-2', name: '18 父爱之舟', desc: '以小见大的写法，细节中的父爱' },
+              { id: 'cn-5a-u6-3', name: '19* 航天员写给孩子的信', desc: '略读课文：书信体特点与重点句理解' },
+              { id: 'cn-5a-u6-4', name: '口语交际·父母之爱 / 习作·我想对您说', desc: '结合事例表达观点；用书信形式写心里话' },
+              { id: 'cn-5a-u6-5', name: '语文园地六', desc: '词句段运用与日积月累' }
             ]
           },
           {
             id: 'cn-5a-u7',
-            name: '第七单元 · 四时景物',
+            name: '第七单元',
             kps: [
-              { id: 'cn-5a-u7-1', name: '古诗词三首', desc: '《山居秋暝》《枫桥夜泊》《长相思》的默写、意象与情感' },
-              { id: 'cn-5a-u7-2', name: '静态与动态描写', desc: '《四季之美》《鸟的天堂》中的动静结合写法及作用' }
+              { id: 'cn-5a-u7-1', name: '20 古诗三首（山居秋暝·枫桥夜泊·早春呈水部张十八员外）', desc: '默写、意象与情感，体会动静结合' },
+              { id: 'cn-5a-u7-2', name: '21* 第一场雪', desc: '略读课文：动静结合与借景抒情的写法' },
+              { id: 'cn-5a-u7-3', name: '22 白鹭', desc: '散文诗的语言特点，排比、比喻的表达效果' },
+              { id: 'cn-5a-u7-4', name: '习作·我最喜爱的季节 / 语文园地', desc: '按顺序写景、写出季节特点；语文园地词句运用' }
             ]
           },
           {
             id: 'cn-5a-u8',
-            name: '第八单元 · 读书明智',
+            name: '第八单元',
             kps: [
-              { id: 'cn-5a-u8-1', name: '文言文词句理解', desc: '《古人谈读书》中重点文言词句的意思与翻译' },
-              { id: 'cn-5a-u8-2', name: '读书方法与观点', desc: '《忆读书》《我的“长生果”》中的读书方法、观点提炼' }
+              { id: 'cn-5a-u8-1', name: '23 古人谈读书', desc: '文言词句的意思与翻译，读书方法和态度' },
+              { id: 'cn-5a-u8-2', name: '24 忆读书', desc: '梳理读书经历，提炼读书方法与观点' },
+              { id: 'cn-5a-u8-3', name: '25* 走遍天下书为侣', desc: '略读课文：比喻论证与作者观点' },
+              { id: 'cn-5a-u8-4', name: '习作·推荐一本书 / 语文园地', desc: '写清推荐理由；语文园地词句运用与日积月累' }
             ]
           }
         ]
@@ -312,61 +369,83 @@ export const SUBJECTS = [
         units: [
           {
             id: 'en-5a-u1',
-            name: '词汇与拼写',
+            name: 'Unit 1 · What do we do at the weekend?',
             kps: [
-              { id: 'en-5a-u1-1', name: '核心词汇拼写', desc: '五年级上册核心单词的拼写与词义，名词单复数形式' },
-              { id: 'en-5a-u1-2', name: '字母组合与发音', desc: '常见字母组合（sh、ch、th、ee、oa 等）的发音规则与辨音' }
+              { id: 'en-5a-u1-1', name: '核心词汇：周末活动', desc: 'go jogging、go fishing、do chores、watch TV、play with friends、have a picnic' },
+              { id: 'en-5a-u1-2', name: '语法：be going to', desc: 'I am / He is / She is / We are going to...，描述周末计划' },
+              { id: 'en-5a-u1-3', name: '语音：c、g 的发音', desc: '字母 c、g 在不同单词中的发音与辨音' },
+              { id: 'en-5a-u1-4', name: '阅读与表达：Weekend plans', desc: 'Reading: Weekend plans / A busy Sunday；听说：不同人的周末计划；写作：我的周末计划邮件' }
             ]
           },
           {
             id: 'en-5a-u2',
-            name: '一般现在时',
+            name: 'Unit 2 · How do we stay healthy?',
             kps: [
-              { id: 'en-5a-u2-1', name: '第三人称单数', desc: '一般现在时中动词第三人称单数形式的变化与用法' },
-              { id: 'en-5a-u2-2', name: '频率副词与时间', desc: 'always、usually、often、sometimes、never 的位置与用法' }
+              { id: 'en-5a-u2-1', name: '核心词汇：健康习惯', desc: 'do exercise、eat healthy food、drink a lot of water、get enough sleep' },
+              { id: 'en-5a-u2-2', name: '语法：be going to 的疑问句', desc: 'What are you going to do? What is he/she going to do? 及答语' },
+              { id: 'en-5a-u2-3', name: '语音：th 的发音', desc: '字母组合 th 的两种发音与辨音' },
+              { id: 'en-5a-u2-4', name: '阅读与表达：Healthy or not?', desc: 'Reading: Healthy or not? / Jim and Matt；听说：儿童健康小贴士；写作：我的生活习惯' }
             ]
           },
           {
             id: 'en-5a-u3',
-            name: '现在进行时',
+            name: 'Unit 3 · What do you know about different countries?',
             kps: [
-              { id: 'en-5a-u3-1', name: 'be + 动词ing', desc: '现在进行时的结构、动词 ing 形式变化与常用时间状语' },
-              { id: 'en-5a-u3-2', name: '现在进行时句型转换', desc: '肯定句、否定句、一般疑问句及答语的转换' }
+              { id: 'en-5a-u3-1', name: '核心词汇：国家与方位', desc: 'China、France、UK、north、south、east、west' },
+              { id: 'en-5a-u3-2', name: '语法：方位表达', desc: 'China is in the east of Asia. 以及国家位置的描述' },
+              { id: 'en-5a-u3-3', name: '语音：s 的发音', desc: '字母 s 的发音规则与辨音' },
+              { id: 'en-5a-u3-4', name: '阅读与表达：Countries around the world', desc: 'Reading: Countries around the world / Life in different countries；写作：介绍一个国家' }
             ]
           },
           {
             id: 'en-5a-u4',
-            name: '情态动词',
-            kps: [{ id: 'en-5a-u4-1', name: 'can / may / must / should', desc: '情态动词表示能力、许可、义务、建议的用法与否定形式' }]
+            name: "Unit 4 · What's interesting about holidays?",
+            kps: [
+              { id: 'en-5a-u4-1', name: '核心词汇：假期与景物', desc: 'mountain、cave、waterfall、hotel' },
+              { id: 'en-5a-u4-2', name: '语法：will 将来时', desc: 'How will you...? Where will you...? What will you...? I will...' },
+              { id: 'en-5a-u4-3', name: '语音：sh、ch 的发音', desc: '字母组合 sh、ch 的发音与辨音' },
+              { id: 'en-5a-u4-4', name: '阅读与表达：A holiday plan', desc: 'Reading: A holiday plan / Holidays up high；听说：三亚假期计划；写作：我的假期计划' }
+            ]
           },
           {
             id: 'en-5a-u5',
-            name: '介词与方位',
+            name: 'Unit 5 · What are living things?',
             kps: [
-              { id: 'en-5a-u5-1', name: '方位介词', desc: 'in、on、under、behind、between、next to 等方位介词辨析' },
-              { id: 'en-5a-u5-2', name: '时间介词', desc: 'at、in、on 在时间表达中的用法区别' }
+              { id: 'en-5a-u5-1', name: '核心词汇：生物的特征', desc: 'get sunlight、get food and water、grow、change、move' },
+              { id: 'en-5a-u5-2', name: '语法：and / or / but', desc: '用 and、or、but 连接句子和词语' },
+              { id: 'en-5a-u5-3', name: '语音：w、wh 的发音', desc: '字母 w 与 wh 组合的发音与辨音' },
+              { id: 'en-5a-u5-4', name: '阅读与表达：Living and non-living things', desc: 'Reading: Living and non-living things / Living to non-living；写作：介绍一种生物或非生物' }
             ]
           },
           {
             id: 'en-5a-u6',
-            name: '疑问句',
+            name: 'Unit 6 · Why should we take care of the Earth?',
             kps: [
-              { id: 'en-5a-u6-1', name: '特殊疑问词', desc: 'what、where、when、who、whose、how 的用法与句子结构' },
-              { id: 'en-5a-u6-2', name: '一般疑问句', desc: 'be 动词与助动词开头的一般疑问句及简略答语' }
+              { id: 'en-5a-u6-1', name: '核心词汇：环境与环保', desc: 'smoke、dirty、rubbish、recycle、reduce' },
+              { id: 'en-5a-u6-2', name: '语法：should / shouldn’t', desc: '用 should、shouldn’t 提出建议' },
+              { id: 'en-5a-u6-3', name: '语音：ng、nk 的发音', desc: '字母组合 ng、nk 的发音与辨音' },
+              { id: 'en-5a-u6-4', name: '阅读与表达：Natural resources', desc: 'Reading: Natural resources / A juice carton’s journey；听说：刘欣一家如何保护河流；写作：如何保护地球' }
             ]
           },
           {
             id: 'en-5a-u7',
-            name: '阅读理解',
+            name: 'Unit 7 · How do we celebrate festivals?',
             kps: [
-              { id: 'en-5a-u7-1', name: '短文信息提取', desc: '读短文抓取人物、时间、地点、事件等关键信息' },
-              { id: 'en-5a-u7-2', name: '完形填空基础', desc: '根据上下文和语法提示选择正确的词填空' }
+              { id: 'en-5a-u7-1', name: '核心词汇：节日', desc: 'Spring Festival、Lantern Festival、Dragon Boat Festival、Mid-Autumn Festival' },
+              { id: 'en-5a-u7-2', name: '语法：将来时间表达', desc: 'in one hour、next month 等时间词与将来时的搭配' },
+              { id: 'en-5a-u7-3', name: '语音：句子重音', desc: 'sentence stress：句子中重读词的判断' },
+              { id: 'en-5a-u7-4', name: '阅读与表达：Important festivals', desc: 'Reading: Important festivals / New Year’s Day around the world；写作：我的节日计划' }
             ]
           },
           {
             id: 'en-5a-u8',
-            name: '情景交际',
-            kps: [{ id: 'en-5a-u8-1', name: '日常对话与礼貌用语', desc: '问候、介绍、请求、道歉、感谢等情景的恰当表达' }]
+            name: 'Unit 8 · How does music make us feel?',
+            kps: [
+              { id: 'en-5a-u8-1', name: '核心词汇：音乐与情绪', desc: 'fast、slow、excited、unhappy' },
+              { id: 'en-5a-u8-2', name: '语法复习', desc: 'Unit 1—7 重点语法综合运用（Grammar Review）' },
+              { id: 'en-5a-u8-3', name: '语音：失去爆破', desc: 'loss of plosion 的读音规则' },
+              { id: 'en-5a-u8-4', name: '阅读与表达：How music makes us feel', desc: 'Reading: How music makes us feel；听说：张亮最喜欢的音乐；写作：旅途中的音乐' }
+            ]
           }
         ]
       },
