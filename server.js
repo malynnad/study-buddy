@@ -87,7 +87,7 @@ function weakKpList(subjectId) {
 
 async function handleGenerate(body) {
   const requested = Array.isArray(body.kpIds) ? body.kpIds.filter(Boolean) : [];
-  const count = Math.min(15, Math.max(1, Number(body.count) || 5));
+  const count = Math.min(50, Math.max(1, Number(body.count) || 5));
   const mode = body.mode === 'reinforce' ? 'reinforce' : 'new';
   const subject =
     findSubject(String(body.subjectId || '')) ||

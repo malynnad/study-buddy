@@ -7,7 +7,7 @@ const state = {
   subjectId: 'math',
   semesterId: 'g5a',
   selectedKps: [],
-  count: 5,
+  count: 10,
   mode: 'new',
   session: null,
   index: 0,
@@ -222,12 +222,13 @@ function setupHTML() {
     <div class="card">
       <div class="option-row">
         <span class="option-label">题量</span>
-        <div class="segmented">
-          ${[3, 5, 8, 10]
+        <div class="segmented count-options">
+          ${[10, 20, 30, 40, 50]
             .map((n) => `<button class="${state.count === n ? 'on' : ''}" data-action="count" data-count="${n}">${n} 题</button>`)
             .join('')}
         </div>
       </div>
+      ${state.count >= 30 ? '<div class="desc" style="margin-top:10px">题量较大时会分批并行生成，等待时间增加不多，token 费用按实际用量计算。</div>' : ''}
       <div class="option-row">
         <span class="option-label">模式</span>
         <div class="segmented">

@@ -231,7 +231,7 @@ function normalizeQuestions(raw, allowedKps, count, allowedTypes = ['choice', 'f
   return cleaned.slice(0, count);
 }
 
-export async function generateQuestions(params) {
+async function generateBatch(params) {
   const { subject, semesterName, units, kps, count, mode, weakKps = [], wrongStems = [], difficultyHint } = params;
   const profile = SUBJECT_PROFILES[subject?.id] || SUBJECT_PROFILES.math;
 
@@ -243,6 +243,11 @@ export async function generateQuestions(params) {
     mode === 'reinforce'
       ? `这是一次「薄弱点巩固练习」。请重点围绕学生掌握较差的知识点出题：优先保证与下列薄弱知识点相关的题目占全部题目的 70% 以上，题目应是同类知识的新情境变式（内容、素材都要变化，不要照抄原题），难度略低于或持平原题，帮助学生重新建立正确的解题思路。`
       : `这是一次「新知识点练习」。请覆盖给定的知识点范围，题目难度由浅入深。`;
+
+  const batchNote =
+    params.batchTotal > 1
+      ? `\n这是第 ${params.batchIndex}/${params.batchTotal} 组题目，请使用与其他组不同的情境、数据和问法，避免与其它组重复。`
+      : '';
 
   const weakLine = weakKps.length
     ? `\n学生薄弱知识点：\n${weakKps.map((k) => `- ${k.name}（正确率 ${k.accuracy}%）`).join('\n')}`
@@ -258,6 +263,7 @@ export async function generateQuestions(params) {
 ${kpLines}
 
 ${modeLine}
+${batchNote}
 ${weakLine}
 ${wrongLine}
 
@@ -275,7 +281,7 @@ ${QUESTION_SCHEMA}`;
       { role: 'system', content: profile.system },
       { role: 'user', content: prompt }
     ],
-    { temperature: 0.8, maxTokens: 4096 }
+    { temperature: 0.8, maxTokens: 8192, timeout: 180000 }
   );
 
   try {
@@ -284,6 +290,54 @@ ${QUESTION_SCHEMA}`;
     err.usage = usage;
     throw err;
   }
+}
+
+const MAX_BATCH_SIZE = 10;
+
+function mergeUsage(usages) {
+  const merged = {
+    model: usages.find(Boolean)?.model || '',
+    promptTokens: 0,
+    completionTokens: 0,
+    cacheHitTokens: 0,
+    cacheMissTokens: 0,
+    totalTokens: 0,
+    cost: 0,
+    priced: true,
+    currency: 'CNY'
+  };
+  for (const usage of usages) {
+    if (!usage) continue;
+    merged.promptTokens += usage.promptTokens || 0;
+    merged.completionTokens += usage.completionTokens || 0;
+    merged.cacheHitTokens += usage.cacheHitTokens || 0;
+    merged.cacheMissTokens += usage.cacheMissTokens || 0;
+    merged.cost += usage.cost || 0;
+    if (!usage.priced) merged.priced = false;
+  }
+  merged.totalTokens = merged.promptTokens + merged.completionTokens;
+  merged.cost = Math.round(merged.cost * 1e6) / 1e6;
+  return merged;
+}
+
+export async function generateQuestions(params) {
+  const total = Math.min(50, Math.max(1, Number(params.count) || 5));
+  const sizes = [];
+  for (let remaining = total; remaining > 0; remaining -= MAX_BATCH_SIZE) {
+    sizes.push(Math.min(MAX_BATCH_SIZE, remaining));
+  }
+  if (sizes.length === 1) {
+    return generateBatch({ ...params, count: total, batchIndex: 1, batchTotal: 1 });
+  }
+  const results = await Promise.all(
+    sizes.map((size, i) =>
+      generateBatch({ ...params, count: size, batchIndex: i + 1, batchTotal: sizes.length })
+    )
+  );
+  return {
+    questions: results.flatMap((result) => result.questions).slice(0, total),
+    usage: mergeUsage(results.map((result) => result.usage))
+  };
 }
 
 export async function analyzeWeakness(payload) {

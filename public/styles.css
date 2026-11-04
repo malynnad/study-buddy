@@ -1315,6 +1315,18 @@ details.solution[open] summary {
   margin-bottom: 14px;
 }
 
+.count-options {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  width: min(420px, 100%);
+}
+
+.count-options button {
+  padding: 7px 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
 .usage-note {
   display: flex;
   align-items: center;
