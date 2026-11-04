@@ -8,7 +8,7 @@ const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const DEFAULTS = {
   provider: 'deepseek',
   baseUrl: 'https://api.deepseek.com',
-  model: 'deepseek-flash',
+  model: 'deepseek-v4-flash',
   apiKey: ''
 };
 

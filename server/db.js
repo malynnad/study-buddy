@@ -61,7 +61,6 @@ db.exec(`
     subject TEXT NOT NULL DEFAULT 'math',
     kind TEXT NOT NULL,
     model TEXT,
-    period TEXT,
     prompt_tokens INTEGER NOT NULL DEFAULT 0,
     completion_tokens INTEGER NOT NULL DEFAULT 0,
     cache_hit_tokens INTEGER NOT NULL DEFAULT 0,
@@ -253,14 +252,13 @@ export function overview(subject) {
 export function recordUsage(entry) {
   db.prepare(
     `INSERT INTO llm_usage
-     (session_id, subject, kind, model, period, prompt_tokens, completion_tokens, cache_hit_tokens, cache_miss_tokens, cost, priced, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     (session_id, subject, kind, model, prompt_tokens, completion_tokens, cache_hit_tokens, cache_miss_tokens, cost, priced, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     entry.sessionId ?? null,
     entry.subject || 'math',
     entry.kind || 'generate',
     entry.model || '',
-    entry.period || '',
     Number(entry.promptTokens) || 0,
     Number(entry.completionTokens) || 0,
     Number(entry.cacheHitTokens) || 0,

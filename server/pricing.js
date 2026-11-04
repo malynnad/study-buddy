@@ -1,19 +1,11 @@
 // 大模型价格与用量换算：单价为「元 / 百万 tokens」，按 DeepSeek 官方公示价估算。
-// DeepSeek 分峰时（08:30–00:30）与谷时（00:30–08:30，北京时间）两档价格，谷时按 5 折计。
+// 当前官方价格不分峰谷时段，直接按统一单价计算。
 const PRICES = {
-  'deepseek-flash': {
-    peak: { inputMiss: 1, inputHit: 0.02, output: 2 },
-    offPeak: { inputMiss: 0.5, inputHit: 0.01, output: 1 }
-  },
-  'deepseek-v4-pro': {
-    peak: { inputMiss: 3, inputHit: 0.025, output: 6 },
-    offPeak: { inputMiss: 1.5, inputHit: 0.0125, output: 3 }
-  }
+  'deepseek-v4-flash': { inputMiss: 1, inputHit: 0.02, output: 2 },
+  // 兼容旧配置中的模型名，价格与 deepseek-v4-flash 相同
+  'deepseek-flash': { inputMiss: 1, inputHit: 0.02, output: 2 },
+  'deepseek-v4-pro': { inputMiss: 3, inputHit: 0.025, output: 6 }
 };
-
-const OFF_PEAK_START = 30; // 00:30
-const OFF_PEAK_END = 510; // 08:30
-const BEIJING_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 export function normalizeUsage(raw) {
   const promptTokens = Math.max(0, Number(raw?.prompt_tokens) || 0);
@@ -30,31 +22,17 @@ export function normalizeUsage(raw) {
   };
 }
 
-// 判断调用发生时的计费时段：北京时间 00:30–08:30 为谷时
-export function periodAt(at = Date.now()) {
-  const beijing = new Date(Number(at) + BEIJING_OFFSET_MS);
-  const minutes = beijing.getUTCHours() * 60 + beijing.getUTCMinutes();
-  return minutes >= OFF_PEAK_START && minutes < OFF_PEAK_END ? 'offPeak' : 'peak';
-}
-
-export function calcCost(model, rawUsage, at = Date.now()) {
+export function calcCost(model, rawUsage) {
   const usage = normalizeUsage(rawUsage);
-  const period = periodAt(at);
   const entry = PRICES[String(model || '').trim()];
-  if (!entry) return { ...usage, period, cost: 0, priced: false, currency: 'CNY' };
-  const price = entry[period];
+  if (!entry) return { ...usage, cost: 0, priced: false, currency: 'CNY' };
   const cost =
-    (usage.cacheMissTokens / 1e6) * price.inputMiss +
-    (usage.cacheHitTokens / 1e6) * price.inputHit +
-    (usage.completionTokens / 1e6) * price.output;
-  return { ...usage, period, cost: Math.round(cost * 1e6) / 1e6, priced: true, currency: 'CNY' };
+    (usage.cacheMissTokens / 1e6) * entry.inputMiss +
+    (usage.cacheHitTokens / 1e6) * entry.inputHit +
+    (usage.completionTokens / 1e6) * entry.output;
+  return { ...usage, cost: Math.round(cost * 1e6) / 1e6, priced: true, currency: 'CNY' };
 }
 
 export function priceTable() {
-  return Object.entries(PRICES).map(([model, p]) => ({
-    model,
-    peak: p.peak,
-    offPeak: p.offPeak,
-    offPeakWindow: '00:30–08:30（北京时间）'
-  }));
+  return Object.entries(PRICES).map(([model, p]) => ({ model, ...p }));
 }

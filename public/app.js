@@ -46,7 +46,7 @@ function fmtCost(n) {
 function usageNoteHTML(usage, title = '本次出题消耗') {
   if (!usage) return '';
   const cost = usage.priced
-    ? `，约 <b>${fmtCost(usage.cost)}</b>${usage.period === 'offPeak' ? '（谷时价）' : usage.period === 'peak' ? '（峰时价）' : ''}`
+    ? `，约 <b>${fmtCost(usage.cost)}</b>`
     : '（该模型未内置价格，仅统计 tokens）';
   return `<div class="usage-note"><span class="usage-tag">AI 用量</span><span>${title} <b>${fmtInt(usage.totalTokens)}</b> tokens（输入 ${fmtInt(
     usage.promptTokens
@@ -581,7 +581,7 @@ function settingsHTML() {
       </div>
       <div class="field">
         <label for="cfg-model">模型名称</label>
-        <input id="cfg-model" class="input" value="${esc(draft.model)}" placeholder="deepseek-flash" />
+        <input id="cfg-model" class="input" value="${esc(draft.model)}" placeholder="deepseek-v4-flash" />
       </div>
       <div class="field">
         <label for="cfg-apikey">API Key</label>
@@ -607,15 +607,14 @@ function settingsHTML() {
     <div class="card" style="margin-top:14px">
       <div class="card-head">
         <h2>模型用量与费用</h2>
-        <span class="hint">按调用时段的官方价估算</span>
+        <span class="hint">按官方公示价估算</span>
         <span class="spacer"></span>
         <button class="link" data-action="refresh-usage">刷新</button>
       </div>
       ${usagePanelHTML()}
       <p class="price-note">
-        DeepSeek 分峰谷两档价格：峰时 08:30–00:30，谷时 00:30–08:30（北京时间，约 5 折）。deepseek-flash 峰时输入 1 元/百万
-        tokens、缓存命中 0.02 元、输出 2 元；deepseek-v4-pro 峰时输入 3 元、缓存命中 0.025 元、输出 6 元。其他模型只统计
-        tokens，不折算金额。
+        DeepSeek 官方价格（元/百万 tokens）：deepseek-v4-flash 输入（缓存未命中）1 元、缓存命中 0.02 元、输出 2 元；
+        deepseek-v4-pro 输入 3 元、缓存命中 0.025 元、输出 6 元。其他模型只统计 tokens，不折算金额；实际扣费以服务商账单为准。
       </p>
     </div>
 
