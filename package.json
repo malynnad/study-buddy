@@ -1,9 +1,9 @@
 {
   "name": "study-buddy",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "深圳小学五年级语文、数学、英语智能练习系统：AI 出题 / 批改 / 错题本 / 薄弱点分析 / 巩固练习",
+  "description": "深圳小学五年级语文、数学、英语、科学智能练习系统：AI 出题 / 批改 / 错题本 / 薄弱点分析 / 巩固练习",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js"
