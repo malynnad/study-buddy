@@ -138,7 +138,7 @@ function headerHTML() {
   return `<header class="topbar"><div class="bar-inner">
     <div class="brand">
       <div class="logo">${ICONS.logo}</div>
-      <div class="brand-text"><strong>五年级闯关</strong><span>深圳 · 语文 / 数学 / 英语</span></div>
+      <div class="brand-text"><strong>Study buddy</strong><span>深圳 · 语文 / 数学 / 英语 / 科学</span></div>
     </div>
     <nav class="tabs">
       ${tab('practice', ICONS.practice, '练习')}

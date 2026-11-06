@@ -363,7 +363,11 @@ async function route(req, res) {
   }
   try {
     const data = fs.readFileSync(filePath);
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(filePath)] || 'application/octet-stream' });
+    res.writeHead(200, {
+      'Content-Type': MIME[path.extname(filePath)] || 'application/octet-stream',
+      // 本地应用，避免浏览器缓存导致改了页面却看不到更新
+      'Cache-Control': 'no-cache'
+    });
     res.end(data);
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
