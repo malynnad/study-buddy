@@ -9,10 +9,11 @@
 ## 三步开始使用
 
 1. **安装 Node.js 22 或更高版本**：<https://nodejs.org/>（选择 LTS 版本即可）。
-2. **下载代码**：
+2. **下载代码**（二选一）：
 
 ```bash
-git clone https://gitee.com/dannylam/study-buddy.git
+git clone https://gitee.com/dannylam/study-buddy.git      # Gitee（国内更快）
+git clone https://github.com/malynnad/study-buddy.git     # GitHub
 ```
 
    也可以在仓库页面点「克隆/下载」→ 下载 ZIP 后解压。
