@@ -7,7 +7,7 @@ import * as store from './server/db.js';
 import { judge } from './server/grade.js';
 import { publicConfig, saveConfig, testConnection, generateQuestions, analyzeWeakness, readConfig } from './server/llm.js';
 import { priceTable } from './server/pricing.js';
-import { generateLocal } from './server/localgen.js';
+import { generateLocal, hasLocalSupport } from './server/localgen.js';
 import { trustSystemCertificates } from './server/tls.js';
 
 const PORT = Number(process.env.PORT || 3000);
@@ -138,13 +138,13 @@ async function handleGenerate(body) {
       usage = result.usage;
     } catch (err) {
       if (err.usage) store.recordUsage({ subject: subject.id, kind: 'generate', ...err.usage });
-      if (subject.id !== 'math') throw new Error(`大模型出题失败：${err.message}。请检查「设置」中的模型配置后重试`);
+      if (!hasLocalSupport(kps)) throw new Error(`大模型出题失败：${err.message}。请检查「设置」中的模型配置后重试`);
       source = 'local';
       warning = `大模型出题失败：${err.message}。已改用内置示例题库，请检查「设置」中的模型配置。`;
       questions = generateLocal(kps, count);
     }
   } else {
-    if (subject.id !== 'math') throw new Error(`${subject.name}题目由大模型生成，请先在「设置」中配置 API Key`);
+    if (!hasLocalSupport(kps)) throw new Error(`${subject.name}题目由大模型生成，请先在「设置」中配置 API Key`);
     source = 'local';
     warning = '尚未配置大模型 API Key，本次使用内置示例题库。到「设置」填写 Key 后即可获得自动生成的新题。';
     questions = generateLocal(kps, count);
