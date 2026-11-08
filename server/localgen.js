@@ -512,9 +512,6 @@ const GENERATORS = {
 };
 
 // —— 北师大版五上（新版）章节的离线兜底题 ——
-const savedAreaGenerator = GENERATORS['5a-u4'];
-const savedSymmetryGenerator = GENERATORS['5a-u2'];
-const savedFactorsGenerator = GENERATORS['5a-u3'];
 
 function decimalAddSub(kp) {
   const kind = kp.id.slice(-1);
@@ -529,6 +526,16 @@ function decimalAddSub(kp) {
     });
   }
   if (kind === '2') {
+    const useProperty = Math.random() < 0.5;
+    if (useProperty) {
+      return choice(kp, {
+        stem: '0.5 和 0.50 的大小相等吗？',
+        correct: '相等',
+        wrongs: ['不相等', '0.5 大', '0.50 大'],
+        solution: '小数的末尾添上 0 或去掉 0，小数的大小不变，所以 0.5 = 0.50。',
+        errorProne: '误以为小数位数多的数更大'
+      });
+    }
     let a = rnd(120, 980) / 100;
     let b = rnd(120, 980) / 100;
     while (Math.abs(a - b) < 1e-9) b = rnd(120, 980) / 100;
@@ -542,25 +549,71 @@ function decimalAddSub(kp) {
     });
   }
   if (kind === '3') {
-    const a = rnd(120, 980) / 100;
-    const b = rnd(20, 500) / 100;
+    const useMove = Math.random() < 0.5;
+    if (useMove) {
+      const a = rnd(12, 85) / 10;
+      return mk(kp, {
+        type: 'fill',
+        stem: `把 ${num(a)} 的小数点向右移动两位，得到的数是多少？`,
+        answer: num(a * 100),
+        solution: `小数点向右移动两位，小数扩大到原来的 100 倍，${num(a)} × 100 = ${num(a * 100)}。`,
+        errorProne: '左右方向搞反，或移动位数记错'
+      });
+    }
+    const meters = rnd(2, 9);
+    const decim = rnd(1, 9) / 10;
+    const m = meters + decim;
     return mk(kp, {
-      type: 'calc',
-      stem: `计算：${num(a)} + ${num(b)} =`,
-      answer: num(a + b),
-      solution: `小数点对齐，按整数加法计算，结果是 ${num(a + b)}。`,
-      errorProne: '小数点没有对齐'
+      type: 'fill',
+      stem: `${num(m)} 米 = 多少厘米？`,
+      answer: num(Math.round(m * 100)),
+      solution: `1 米 = 100 厘米，把小数点向右移动两位，${num(m)} 米 = ${Math.round(m * 100)} 厘米。`,
+      errorProne: '单位之间的进率记错'
     });
   }
-  const a = rnd(300, 900) / 100;
-  const b = rnd(100, 400) / 100;
-  const c = rnd(50, 250) / 100;
+  if (kind === '4') {
+    const a = rnd(120, 980) / 100;
+    const b = rnd(20, 500) / 100;
+    if (Math.random() < 0.5) {
+      return mk(kp, {
+        type: 'calc',
+        stem: `计算：${num(a)} + ${num(b)} =`,
+        answer: num(a + b),
+        solution: `小数点对齐，按整数加法计算，结果是 ${num(a + b)}。`,
+        errorProne: '小数点没有对齐'
+      });
+    }
+    const bigger = Math.max(a, b);
+    const smaller = Math.min(a, b);
+    return mk(kp, {
+      type: 'calc',
+      stem: `计算：${num(bigger)} - ${num(smaller)} =`,
+      answer: num(bigger - smaller),
+      solution: `小数点对齐，被减数小数位数不够时补 0，结果是 ${num(bigger - smaller)}。`,
+      errorProne: '小数点没有对齐，或退位出错'
+    });
+  }
+  if (kind === '5') {
+    const a = rnd(300, 900) / 100;
+    const b = rnd(100, 400) / 100;
+    const c = rnd(50, 250) / 100;
+    return mk(kp, {
+      type: 'calc',
+      stem: `计算：${num(a)} + ${num(b)} - ${num(c)} =`,
+      answer: num(a + b - c),
+      solution: `按从左到右的顺序计算：${num(a)} + ${num(b)} = ${num(a + b)}，再减 ${num(c)} 得 ${num(a + b - c)}。`,
+      errorProne: '运算顺序错误'
+    });
+  }
+  const dividend = rnd(21, 99);
+  let divisor = rnd(2, 9);
+  while (dividend % divisor === 0) divisor = rnd(2, 9);
   return mk(kp, {
     type: 'calc',
-    stem: `计算：${num(a)} + ${num(b)} - ${num(c)} =`,
-    answer: num(a + b - c),
-    solution: `按从左到右的顺序计算：${num(a)} + ${num(b)} = ${num(a + b)}，再减 ${num(c)} 得 ${num(a + b - c)}。`,
-    errorProne: '运算顺序错误'
+    stem: `计算：${dividend} ÷ ${divisor} =`,
+    answer: num(dividend / divisor),
+    solution: `整数除法有余数时，在余数后补 0 继续除，商的小数点与被除数对齐，${dividend} ÷ ${divisor} = ${num(dividend / divisor)}。`,
+    errorProne: '余数后忘记补 0，或商的小数点位置写错'
   });
 }
 
@@ -604,14 +657,24 @@ function triangleQuestion(kp) {
       errorProne: '忘记先求第三个角'
     });
   }
-  const a = rnd(30, 80);
-  const b = rnd(30, 80);
+  if (kind === '4') {
+    const a = rnd(30, 80);
+    const b = rnd(30, 80);
+    return mk(kp, {
+      type: 'fill',
+      stem: `三角形中两个角分别是 ${a}° 和 ${b}°，第三个角是多少度？`,
+      answer: num(180 - a - b),
+      solution: `三角形内角和是 180°，第三个角是 180° - ${a}° - ${b}° = ${180 - a - b}°。`,
+      errorProne: '内角和记错'
+    });
+  }
+  const n = pick([4, 5, 6, 7, 8]);
   return mk(kp, {
     type: 'fill',
-    stem: `三角形中两个角分别是 ${a}° 和 ${b}°，第三个角是多少度？`,
-    answer: num(180 - a - b),
-    solution: `三角形内角和是 180°，第三个角是 180° - ${a}° - ${b}° = ${180 - a - b}°。`,
-    errorProne: '内角和记错'
+    stem: `${n} 边形的内角和是多少度？`,
+    answer: num(180 * (n - 2)),
+    solution: `n 边形的内角和 = 180° × (n − 2)，${n} 边形的内角和是 180° × ${n - 2} = ${180 * (n - 2)}°。`,
+    errorProne: '公式记错，忘记减 2'
   });
 }
 
@@ -640,6 +703,19 @@ function decimalMul(kp) {
     });
   }
   if (kind === '3') {
+    const useRelation = Math.random() < 0.5;
+    if (useRelation) {
+      const a = rnd(11, 99) / 10;
+      const factor = Math.random() < 0.5 ? rnd(2, 9) : rnd(1, 9) / 10;
+      const bigger = factor > 1;
+      return choice(kp, {
+        stem: `${num(a)} × ${num(factor)} 的积与 ${num(a)} 相比，（　）。`,
+        correct: bigger ? '积比原数大' : '积比原数小',
+        wrongs: bigger ? ['积比原数小', '积与原数相等', '无法比较'] : ['积比原数大', '积与原数相等', '无法比较'],
+        solution: `一个数（0 除外）乘大于 1 的数，积比原数大；乘小于 1 的数，积比原数小。${num(factor)} ${bigger ? '大于' : '小于'} 1，所以积比原数${bigger ? '大' : '小'}。`,
+        errorProne: '没有观察乘数与 1 的大小关系'
+      });
+    }
     const a = rnd(11, 99) / 10;
     const b = rnd(11, 99) / 10;
     const product = Math.round(a * b * 10) / 10;
@@ -689,43 +765,57 @@ function letterAlgebra(kp) {
     });
   }
   if (kind === '2') {
-    const n = rnd(3, 20);
+    const useLaw = Math.random() < 0.5;
+    if (useLaw) {
+      return choice(kp, {
+        stem: '乘法分配律用字母表示是（　）。',
+        correct: '(a+b)×c=a×c+b×c',
+        wrongs: ['a×b=b×a', '(a×b)×c=a×(b×c)', 'a+b=b+a'],
+        solution: '乘法分配律：两个数的和乘一个数，等于这两个数分别乘这个数再相加，即 (a+b)×c=a×c+b×c。',
+        errorProne: '把乘法分配律和交换律、结合律混淆'
+      });
+    }
+    const v = pick(['a', 'x', 'n']);
     return choice(kp, {
-      stem: `小明原有 x 元，又得到 ${n} 元，现在有多少元？`,
-      correct: `x+${n}`,
-      wrongs: [`x-${n}`, `${n}x`, `${n}÷x`],
-      solution: `在原有的 x 元基础上增加 ${n} 元，所以是 x+${n}。`,
-      errorProne: '数量关系理解反了'
+      stem: `正方形的边长是 ${v}，它的面积用字母表示是（　）。`,
+      correct: `${v}²`,
+      wrongs: [`2${v}`, `4${v}`, `${v}+${v}`],
+      solution: `正方形面积 = 边长 × 边长，即 ${v} × ${v}，写作 ${v}²。`,
+      errorProne: '把面积和周长公式混淆，或把 a² 写成 2a'
     });
   }
   if (kind === '3') {
-    if (Math.random() < 0.5) {
-      const v = pick(['a', 'x', 'n']);
-      return choice(kp, {
-        stem: `正方形的边长是 ${v}，它的周长用字母表示是（　）。`,
-        correct: `4${v}`,
-        wrongs: [`${v}+4`, `2${v}`, `${v}²`],
-        solution: `正方形有 4 条相等的边，周长是 ${v}+${v}+${v}+${v}，即 4${v}。`,
-        errorProne: '把周长和面积公式混淆'
-      });
-    }
-    return choice(kp, {
-      stem: '长方形的长是 a，宽是 b，它的周长用字母表示是（　）。',
-      correct: '2(a+b)',
-      wrongs: ['ab', 'a+b', '2ab'],
-      solution: '长方形周长 = (长 + 宽) × 2，即 2(a+b)。',
-      errorProne: '把周长和面积公式混淆'
+    const first = rnd(5, 9);
+    const inc = rnd(3, 6);
+    const n = rnd(2, 5);
+    const formula = `${inc}n+${first - inc}`;
+    return mk(kp, {
+      type: 'fill',
+      stem: `摆 1 个图形需要 ${first} 根小棒，摆 2 个需要 ${first + inc} 根，摆 3 个需要 ${first + 2 * inc} 根……照这样，摆 n 个图形需要多少根小棒？（用含 n 的式子表示）`,
+      answer: formula,
+      solution: `每增加 1 个图形增加 ${inc} 根小棒，摆 n 个图形需要 ${first} + (n-1)×${inc} = ${formula} 根小棒。`,
+      errorProne: '没有找到每次增加的数量，或首项与通项的关系搞错'
     });
   }
-  const x = rnd(3, 9);
-  const k = rnd(2, 5);
-  const b = rnd(1, 9);
-  return mk(kp, {
-    type: 'calc',
-    stem: `当 x=${x} 时，${k}x+${b} 的值是多少？`,
-    answer: num(k * x + b),
-    solution: `把 x=${x} 代入：${k}×${x}+${b} = ${k * x}+${b} = ${k * x + b}。`,
-    errorProne: '代入后运算顺序错误'
+  if (kind === '4') {
+    const x = rnd(3, 9);
+    const k = rnd(2, 5);
+    const b = rnd(1, 9);
+    return mk(kp, {
+      type: 'calc',
+      stem: `当 x=${x} 时，${k}x+${b} 的值是多少？`,
+      answer: num(k * x + b),
+      solution: `把 x=${x} 代入：${k}×${x}+${b} = ${k * x}+${b} = ${k * x + b}。`,
+      errorProne: '代入后运算顺序错误'
+    });
+  }
+  const add = rnd(2, 9);
+  return choice(kp, {
+    stem: `等式 x = 10 的两边都加上 ${add}，所得结果仍然是等式吗？如果是，新的等式是（　）。`,
+    correct: `x+${add}=${10 + add}`,
+    wrongs: [`x=${10 + add}`, `x+${add}=10`, `x=${add}`],
+    solution: `等式两边都加上同一个数，等式仍然成立。两边都加 ${add}，得 x+${add}=${10 + add}。`,
+    errorProne: '只在一边加，或忘记等式两边要同时变化'
   });
 }
 
@@ -812,14 +902,210 @@ function areaEstimate(kp) {
   });
 }
 
+// 多边形的面积：5 个知识点
+function areaQuestion(kp) {
+  const kind = kp.id.slice(-1);
+  if (kind === '1') {
+    return choice(kp, {
+      stem: '一个平行四边形可以画多少条高？',
+      correct: '无数条',
+      wrongs: ['1 条', '2 条', '4 条'],
+      solution: '平行四边形的高是从对边任意一点向底边画的垂直线段，对边上有无数个点，所以可以画无数条高。',
+      errorProne: '误以为高只有一条'
+    });
+  }
+  if (kind === '2') {
+    const a = rnd(4, 15);
+    const h = rnd(3, 9);
+    return mk(kp, {
+      type: 'calc',
+      stem: `一个平行四边形的底是 ${a} 厘米，对应的高是 ${h} 厘米，它的面积是多少平方厘米？`,
+      answer: num(a * h),
+      solution: `平行四边形面积 = 底 × 高 = ${a} × ${h} = ${a * h}（平方厘米）。`,
+      errorProne: '底和高不对应'
+    });
+  }
+  if (kind === '3') {
+    const a = rnd(4, 16);
+    const h = rnd(2, 8) * 2;
+    return mk(kp, {
+      type: 'calc',
+      stem: `一个三角形的底是 ${a} 厘米，高是 ${h} 厘米，它的面积是多少平方厘米？`,
+      answer: num(a * h / 2),
+      solution: `三角形面积 = 底 × 高 ÷ 2 = ${a} × ${h} ÷ 2 = ${a * h / 2}（平方厘米）。`,
+      errorProne: '忘记除以 2'
+    });
+  }
+  if (kind === '4') {
+    const up = rnd(3, 8);
+    const low = up + rnd(2, 7);
+    const h = rnd(2, 6) * 2;
+    return mk(kp, {
+      type: 'calc',
+      stem: `一个梯形的上底是 ${up} 厘米，下底是 ${low} 厘米，高是 ${h} 厘米，面积是多少平方厘米？`,
+      answer: num((up + low) * h / 2),
+      solution: `梯形面积 = (上底 + 下底) × 高 ÷ 2 = (${up} + ${low}) × ${h} ÷ 2 = ${(up + low) * h / 2}（平方厘米）。`,
+      errorProne: '漏乘 2 或漏加上底'
+    });
+  }
+  const a = rnd(2, 9);
+  return mk(kp, {
+    type: 'fill',
+    stem: `${a} 公顷 = 多少平方米？`,
+    answer: num(a * 10000),
+    solution: `1 公顷 = 10000 平方米，${a} 公顷 = ${a * 10000} 平方米。`,
+    errorProne: '公顷与平方米的进率记成 100'
+  });
+}
+
+// 图形的位置与运动（一）：4 个知识点
+function transformQuestion(kp) {
+  const kind = kp.id.slice(-1);
+  if (kind === '1') {
+    const col = rnd(1, 9);
+    const row = rnd(1, 9);
+    return mk(kp, {
+      type: 'fill',
+      stem: `一个点在第 ${col} 列、第 ${row} 行，用数对表示是（　）。`,
+      answer: `${col},${row}`,
+      solution: `用数对表示位置时先列后行，所以第 ${col} 列、第 ${row} 行写作 (${col}, ${row})。`,
+      errorProne: '行列顺序写反'
+    });
+  }
+  if (kind === '2') {
+    const col = rnd(2, 7);
+    const row = rnd(2, 7);
+    return choice(kp, {
+      stem: `点 A 的位置用数对表示是 (${col}, ${row})，把它向下平移 2 格后，新位置的数对是（　）。`,
+      correct: `(${col}, ${row - 2})`,
+      wrongs: [`(${col + 2}, ${row})`, `(${col}, ${row + 2})`, `(${col - 2}, ${row})`],
+      solution: '向下平移是沿竖直方向移动，列数不变（第一个数不变），行数减少 2，所以新位置是 (' + col + ', ' + (row - 2) + ')。',
+      errorProne: '平移方向和数对变化的对应关系搞反'
+    });
+  }
+  if (kind === '3') {
+    const shape = pick(['正方形', '长方形', '等边三角形']);
+    const axes = shape === '正方形' ? 4 : shape === '长方形' ? 2 : 3;
+    return mk(kp, {
+      type: 'fill',
+      stem: `${shape}有几条对称轴？`,
+      answer: String(axes),
+      solution: `${shape}沿不同方向的直线对折都能完全重合，一共可以找到 ${axes} 条对称轴。`,
+      errorProne: '容易漏数斜方向的对称轴'
+    });
+  }
+  const n = rnd(2, 8);
+  return choice(kp, {
+    stem: `把一个图形向右平移 ${n} 格，图形的形状和大小（改变/不变），位置（改变/不变）。请在横线上依次填写。`,
+    correct: '不变，改变',
+    wrongs: ['改变，不变', '改变，改变', '不变，不变'],
+    solution: '平移只改变图形的位置，不改变图形的形状和大小。',
+    errorProne: '误以为平移会让图形变大'
+  });
+}
+
+// 倍数与因数：6 个知识点
+function factorsQuestion(kp) {
+  const kind = kp.id.slice(-1);
+  if (kind === '1') {
+    const a = rnd(2, 9);
+    const b = rnd(2, 9);
+    const c = a * b;
+    return choice(kp, {
+      stem: `${a} × ${b} = ${c}，下面说法正确的是（　）。`,
+      correct: `${c} 是 ${a} 和 ${b} 的倍数`,
+      wrongs: [`${a} 是倍数`, `${b} 是因数`, `${a} 和 ${b} 都是倍数`],
+      solution: `在非零自然数范围内，${a} × ${b} = ${c}，所以 ${a} 和 ${b} 是 ${c} 的因数，${c} 是 ${a} 和 ${b} 的倍数。倍数与因数是相互依存的。`,
+      errorProne: '单独说某数是倍数或因数，没有说清相互关系'
+    });
+  }
+  if (kind === '2') {
+    const digitSum = (x) => String(x).split('').reduce((s, d) => s + Number(d), 0);
+    let list = [];
+    let answer = 0;
+    for (let tries = 0; tries < 30; tries++) {
+      const base = rnd(3, 20) * 15;
+      const candidates = [base, base + 2, base + 6, base + 9].sort(() => Math.random() - 0.5);
+      if (candidates.filter((x) => x % 5 === 0 && digitSum(x) % 3 === 0).length === 1) {
+        list = candidates;
+        answer = base;
+        break;
+      }
+    }
+    if (!list.length) {
+      list = [15, 32, 46, 59];
+      answer = 15;
+    }
+    return mk(kp, {
+      type: 'choice',
+      stem: '下面各数中，既是 5 的倍数又是 3 的倍数的数是（　）。',
+      options: list.map((x, i) => `${'ABCD'[i]}. ${x}`),
+      answer: 'ABCD'[list.indexOf(answer)],
+      solution: `5 的倍数看个位是 0 或 5，3 的倍数看各位数字之和能被 3 整除，只有 ${answer} 同时满足。`,
+      errorProne: '只检查了 5 的倍数特征'
+    });
+  }
+  if (kind === '3') {
+    const primes = [11, 13, 17, 19, 23, 29, 31];
+    const p = pick(primes);
+    const comp = p + 1;
+    return mk(kp, {
+      type: 'fill',
+      stem: `${p} 是质数还是合数？${comp} 呢？（按顺序填写：质数/合数）`,
+      answer: `质数，合数`,
+      solution: `${p} 只有 1 和它本身两个因数，是质数；${comp} 除了 1 和本身还有别的因数，是合数。`,
+      errorProne: '把 1 当成质数，或混淆质数与合数的判断标准'
+    });
+  }
+  if (kind === '4') {
+    const odd1 = rnd(1, 9) * 2 + 1;
+    const odd2 = rnd(1, 9) * 2 + 1;
+    return mk(kp, {
+      type: 'choice',
+      stem: `奇数 ${odd1} 与奇数 ${odd2} 的和是（　）。`,
+      options: ['A. 奇数', 'B. 偶数', 'C. 可能是奇数也可能是偶数', 'D. 无法确定'],
+      answer: 'B',
+      solution: `奇数 + 奇数 = 偶数，${odd1} + ${odd2} = ${odd1 + odd2}，是偶数。`,
+      errorProne: '只算结果不总结规律'
+    });
+  }
+  if (kind === '5') {
+    const a = rnd(2, 9);
+    const b = rnd(2, 9);
+    return mk(kp, {
+      type: 'fill',
+      stem: `${a * b} 和 ${a * (b + 1)} 的最大公因数是多少？`,
+      answer: num(gcd(a * b, a * (b + 1))),
+      solution: `用列举法或短除法：它们的最大公因数是 ${gcd(a * b, a * (b + 1))}。`,
+      errorProne: '把最小公倍数当成最大公因数'
+    });
+  }
+  const comp = pick([12, 18, 24, 30, 36, 48]);
+  const factors = [];
+  let tmp = comp;
+  for (let p = 2; p <= tmp; p++) {
+    while (tmp % p === 0) {
+      factors.push(p);
+      tmp /= p;
+    }
+  }
+  return mk(kp, {
+    type: 'fill',
+    stem: `把 ${comp} 分解质因数，结果是（用乘号连接，如 2×2×3）。`,
+    answer: factors.join('×'),
+    solution: `用短除法从最小的质数开始除，${comp} = ${factors.join('×')}。`,
+    errorProne: '分解结果中出现了合数，没有分解到质数为止'
+  });
+}
+
 Object.assign(GENERATORS, {
   '5a-u1': decimalAddSub,
   '5a-u2': triangleQuestion,
   '5a-u3': decimalMul,
   '5a-u4': letterAlgebra,
-  '5a-u5': (kp) => (Math.random() < 0.5 ? drawArea(kp) : savedAreaGenerator(kp)),
-  '5a-u6': (kp) => (Math.random() < 0.5 ? drawTransform(kp) : savedSymmetryGenerator(kp)),
-  '5a-u7': savedFactorsGenerator,
+  '5a-u5': (kp) => (Math.random() < 0.5 ? drawArea(kp) : areaQuestion(kp)),
+  '5a-u6': (kp) => (Math.random() < 0.5 ? drawTransform(kp) : transformQuestion(kp)),
+  '5a-u7': factorsQuestion,
   '5a-u8': probabilityQuestion,
   '5a-u9': designQuestion,
   '5a-u10': chickenRabbit,
