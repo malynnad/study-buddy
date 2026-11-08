@@ -54,21 +54,74 @@ export function publicConfig() {
   };
 }
 
+function parseError(message) {
+  const err = new Error(message);
+  err.code = 'PARSE';
+  return err;
+}
+
+// 模型生成长 JSON 时常见两类小瑕疵：数组元素之间漏写逗号、多余的尾逗号
+function repairJsonLoose(body) {
+  let t = body.replace(/[\uFEFF\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+  t = t.replace(/}(\s*)\{/g, '},$1{');
+  t = t.replace(/\](\s*)\{/g, '],$1{');
+  t = t.replace(/"(\s+)"/g, '",$1"');
+  t = t.replace(/,\s*([}\]])/g, '$1');
+  return t;
+}
+
+// 响应被 max_tokens 截断时，回退到最后一个完整的题目对象并补全括号
+function salvageArrayObjects(body) {
+  const arrStart = body.indexOf('[');
+  if (arrStart === -1) return null;
+  let braceDepth = 0;
+  let base = -1;
+  let lastClose = -1;
+  let inStr = false;
+  let esc = false;
+  for (let i = arrStart; i < body.length; i += 1) {
+    const ch = body[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === '\\') esc = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') {
+      inStr = true;
+    } else if (ch === '{') {
+      braceDepth += 1;
+      if (base === -1) base = braceDepth;
+    } else if (ch === '}') {
+      braceDepth -= 1;
+      if (base !== -1 && braceDepth === base - 1) lastClose = i;
+    }
+  }
+  if (lastClose === -1) return null;
+  try {
+    return JSON.parse(repairJsonLoose(`${body.slice(0, lastClose + 1)}]}`));
+  } catch {
+    return null;
+  }
+}
+
 function extractJson(text) {
-  if (!text) throw new Error('模型返回内容为空');
+  if (!text) throw parseError('模型返回内容为空');
   let t = text.trim();
   const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fence) t = fence[1].trim();
   const start = t.indexOf('{');
+  if (start === -1) throw parseError('模型未按要求返回 JSON');
   const end = t.lastIndexOf('}');
-  if (start === -1 || end === -1 || end <= start) throw new Error('模型未按要求返回 JSON');
-  const body = t.slice(start, end + 1);
-  try {
-    return JSON.parse(body);
-  } catch {
-    const repaired = body.replace(/,\s*([}\]])/g, '$1');
-    return JSON.parse(repaired);
+  const body = end > start ? t.slice(start, end + 1) : t.slice(start);
+  for (const candidate of [body, repairJsonLoose(body)]) {
+    try {
+      return JSON.parse(candidate);
+    } catch { /* 试下一种修复 */ }
   }
+  const salvaged = salvageArrayObjects(body);
+  if (salvaged) return salvaged;
+  throw parseError('模型返回的 JSON 格式有误，已无法解析');
 }
 
 async function chat(messages, { temperature = 0.7, maxTokens = 4096, timeout = 120000 } = {}) {
@@ -132,7 +185,7 @@ export async function testConnection() {
   return { ok: true, sample: content.trim().slice(0, 80), usage };
 }
 
-const QUESTION_SCHEMA = `严格返回如下 JSON：
+const QUESTION_SCHEMA = `严格返回如下合法 JSON（数组元素之间必须用英文逗号分隔；字符串内部不要出现英文双引号，需要引用时改用「」；不要输出注释）：
 {
   "questions": [
     {
@@ -389,6 +442,18 @@ function mergeUsage(usages) {
   return merged;
 }
 
+// 单批出题；若只是 JSON 解析失败，自动重试一次（网络/鉴权等错误不重试）
+async function runBatch(params) {
+  try {
+    return await generateBatch(params);
+  } catch (err) {
+    if (err.code !== 'PARSE') throw err;
+    const retried = await generateBatch(params);
+    if (err.usage) retried.usage = mergeUsage([err.usage, retried.usage]);
+    return retried;
+  }
+}
+
 export async function generateQuestions(params) {
   const total = Math.min(50, Math.max(1, Number(params.count) || 5));
   const sizes = [];
@@ -399,13 +464,13 @@ export async function generateQuestions(params) {
   let questions;
   let usage;
   if (sizes.length === 1) {
-    const result = await generateBatch({ ...params, count: total, batchIndex: 1, batchTotal: 1 });
+    const result = await runBatch({ ...params, count: total, batchIndex: 1, batchTotal: 1 });
     questions = result.questions;
     usage = result.usage;
   } else {
     const results = await Promise.all(
       sizes.map((size, i) =>
-        generateBatch({ ...params, count: size, batchIndex: i + 1, batchTotal: sizes.length })
+        runBatch({ ...params, count: size, batchIndex: i + 1, batchTotal: sizes.length })
       )
     );
     questions = results.flatMap((result) => result.questions).slice(0, total);
@@ -416,7 +481,7 @@ export async function generateQuestions(params) {
   const missing = total - questions.length;
   if (missing > 0) {
     try {
-      const extra = await generateBatch({ ...params, count: Math.min(missing, MAX_BATCH_SIZE), batchIndex: 1, batchTotal: 1 });
+      const extra = await runBatch({ ...params, count: Math.min(missing, MAX_BATCH_SIZE), batchIndex: 1, batchTotal: 1 });
       questions = questions.concat(extra.questions).slice(0, total);
       usage = mergeUsage([usage, extra.usage]);
     } catch {
